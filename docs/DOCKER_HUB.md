@@ -66,6 +66,18 @@ SEARXNG_SECRET="$(openssl rand -hex 32)" RETRIEVAL_API_KEY="$(openssl rand -hex 
   perl -0pi -e 's/^SEARXNG_SECRET=.*/SEARXNG_SECRET=$ENV{SEARXNG_SECRET}/m; s/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{RETRIEVAL_API_KEY}/m' .env
 ```
 
+For the default image-based Compose stack, keep these values in `.env`:
+
+```dotenv
+SEARXNG_BASE_URLS=http://searxng:8080
+SEARXNG_HOST_PORT=8888
+TAVILY_ENABLED=false
+BRAVE_ENABLED=false
+RERANKER_ENABLED=false
+```
+
+See [ENVIRONMENT.md](ENVIRONMENT.md) for the full `.env` guide.
+
 Start from Docker Hub instead of building locally:
 
 ```bash

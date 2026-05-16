@@ -15,6 +15,8 @@ SEARXNG_SECRET="$(openssl rand -hex 32)" RETRIEVAL_API_KEY="$(openssl rand -hex 
 docker compose up -d --build
 ```
 
+For the default Docker Compose stack, users should keep `SEARXNG_BASE_URLS=http://searxng:8080` in `.env`. If they run the API directly on the host, use `SEARXNG_BASE_URLS=http://127.0.0.1:8888` instead. See [../ENVIRONMENT.md](../ENVIRONMENT.md) for complete `.env` examples.
+
 Verify:
 
 ```bash

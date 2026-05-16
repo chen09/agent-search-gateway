@@ -68,6 +68,25 @@ Minimum local setup:
 cp .env.example .env
 ```
 
+Then replace at least these two required values:
+
+```dotenv
+SEARXNG_SECRET=<generated-with-openssl-rand-hex-32>
+RETRIEVAL_API_KEY=<generated-with-openssl-rand-hex-32>
+```
+
+For Docker Compose, keep:
+
+```dotenv
+SEARXNG_BASE_URLS=http://searxng:8080
+SEARXNG_HOST_PORT=8888
+TAVILY_ENABLED=false
+BRAVE_ENABLED=false
+RERANKER_ENABLED=false
+```
+
+See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) for complete `.env` examples for Docker Compose, host Python development, MCP clients, hosted provider keys, Jina Reader, and optional reranking.
+
 If you want Tavily as an explicit hosted fallback or compatibility provider, edit `.env`:
 
 ```dotenv
