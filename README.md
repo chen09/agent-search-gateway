@@ -108,6 +108,26 @@ curl -sS -H "Authorization: Bearer ${API_KEY}" \
   "http://127.0.0.1:8010/search?q=local%20AI%20search&max_results=3" | jq .
 ```
 
+## Prebuilt Docker Image
+
+The retrieval API can also run from Docker Hub instead of building locally:
+
+```bash
+cd agent-search-gateway
+cp .env.example .env
+SEARXNG_SECRET="$(openssl rand -hex 32)" RETRIEVAL_API_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^SEARXNG_SECRET=.*/SEARXNG_SECRET=$ENV{SEARXNG_SECRET}/m; s/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{RETRIEVAL_API_KEY}/m' .env
+docker compose -f docker-compose.image.yml up -d
+```
+
+Default image:
+
+```text
+docker.io/chen920/agent-search-gateway:latest
+```
+
+Users still provide their own `.env`; the image does not contain API keys or provider credentials. See [docs/DOCKER_HUB.md](docs/DOCKER_HUB.md) for publishing and image-based deployment details.
+
 ## Agent Client Integration
 
 For Cursor, Codex, Claude, OpenClaw, Hermes, and similar agents, use the MCP server as the primary integration point. The MCP server runs on the host and calls the gateway at `http://127.0.0.1:8010`; it does not call SearXNG directly.

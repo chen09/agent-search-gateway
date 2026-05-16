@@ -12,7 +12,7 @@ from api.models import Candidate, ExtractedResult
 from api.text_utils import clean_text
 
 USER_AGENT = (
-    "Mozilla/5.0 (compatible; agent-search-gateway/0.2.0; "
+    "Mozilla/5.0 (compatible; agent-search-gateway/0.2.1; "
     "+https://example.invalid/agent-search-gateway)"
 )
 

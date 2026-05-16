@@ -1,0 +1,52 @@
+services:
+  valkey:
+    image: docker.io/valkey/valkey:8-alpine
+    command: ["valkey-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+    networks:
+      - retrieval
+
+  searxng:
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    depends_on:
+      - valkey
+    ports:
+      - "127.0.0.1:${SEARXNG_HOST_PORT:-8888}:8080"
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    environment:
+      SEARXNG_BASE_URL: "http://localhost:${SEARXNG_HOST_PORT:-8888}/"
+      SEARXNG_SECRET: "${SEARXNG_SECRET}"
+      SEARXNG_VALKEY_URL: "valkey://valkey:6379/0"
+      SEARXNG_LIMITER: "false"
+    networks:
+      - retrieval
+
+  retrieval-api:
+    image: "${RETRIEVAL_API_IMAGE:-docker.io/chen920/agent-search-gateway:latest}"
+    restart: unless-stopped
+    depends_on:
+      - searxng
+    env_file:
+      - .env
+    environment:
+      SEARXNG_BASE_URLS: "${SEARXNG_BASE_URLS:-http://searxng:8080}"
+    ports:
+      - "127.0.0.1:8010:8010"
+    networks:
+      - retrieval
+
+  jina-reader:
+    image: ghcr.io/jina-ai/reader:oss
+    restart: unless-stopped
+    profiles:
+      - reader
+    ports:
+      - "127.0.0.1:3001:8081"
+    networks:
+      - retrieval
+
+networks:
+  retrieval:
+    driver: bridge

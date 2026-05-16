@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-05-17
+
+- Added Docker Hub publishing workflow for the retrieval API image.
+- Added `docker-compose.image.yml` for running from a prebuilt image instead of building locally.
+- Added Docker Hub maintainer and user setup documentation.
+- Published the default image under `docker.io/chen920/agent-search-gateway`.
+
 ## 0.2.0 - 2026-05-17
 
 - Added Docker Compose verified local stack with SearXNG on host port 8888, retrieval API on 8010, and Valkey.
