@@ -15,7 +15,7 @@ RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
     && /opt/venv/bin/pip install -r requirements.txt
 
-COPY main.py .
+COPY . ./api
 
 EXPOSE 8010
-CMD ["/opt/venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8010"]
+CMD ["/opt/venv/bin/uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8010"]

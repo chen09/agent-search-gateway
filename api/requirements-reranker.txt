@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# Optional local CrossEncoder reranker.
+# On macOS, PyTorch recommends pip wheels and supports Python 3.10-3.14.
+# Keep this separate so the gateway can run without PyTorch on small machines.
+sentence-transformers==3.3.1

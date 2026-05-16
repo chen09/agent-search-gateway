@@ -1,124 +1,103 @@
-import asyncio
-import os
-import re
+from __future__ import annotations
+
 import time
-from dataclasses import dataclass
-from typing import Any
-from urllib.parse import urlparse
+from typing import Any, Dict, List, Optional, Set
+from uuid import uuid4
 
-import httpx
-import trafilatura
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
-from pydantic import BaseModel, Field
 
-
-def env_bool(name: str, default: bool) -> bool:
-    value = os.getenv(name)
-    if value is None:
-        return default
-    return value.strip().lower() in {"1", "true", "yes", "on"}
-
-
-def env_int(name: str, default: int) -> int:
-    try:
-        return int(os.getenv(name, str(default)))
-    except ValueError:
-        return default
-
-
-API_KEY = os.getenv("RETRIEVAL_API_KEY", "")
-SEARXNG_BASE_URLS = [
-    item.strip().rstrip("/")
-    for item in os.getenv("SEARXNG_BASE_URLS", "http://searxng:8080").split(",")
-    if item.strip()
-]
-MAX_RESULTS = env_int("MAX_RESULTS", 8)
-EXTRACT_TOP_K = env_int("EXTRACT_TOP_K", 5)
-CONTENT_MAX_CHARS = env_int("CONTENT_MAX_CHARS", 12000)
-HTTP_TIMEOUT_SECONDS = env_int("HTTP_TIMEOUT_SECONDS", 15)
-RERANKER_ENABLED = env_bool("RERANKER_ENABLED", True)
-RERANKER_MODEL = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L6-v2")
-RERANKER_DEVICE = os.getenv("RERANKER_DEVICE", "cpu")
-JINA_READER_BASE_URL = os.getenv("JINA_READER_BASE_URL", "").rstrip("/")
-JINA_API_KEY = os.getenv("JINA_API_KEY", "")
-SUMMARY_WEBHOOK_URL = os.getenv("SUMMARY_WEBHOOK_URL", "")
-
-USER_AGENT = (
-    "Mozilla/5.0 (compatible; agent-search-gateway/0.1; "
-    "+https://example.invalid/agent-search-gateway)"
+from api.cache import TTLCache, cache_key
+from api.config import settings
+from api.extraction import ContentExtractor
+from api.models import (
+    Candidate,
+    ExtractRequest,
+    SearchRequest,
+    SearchResponse,
+    SearchResult,
+    normalize_urls,
 )
+from api.providers.searxng import SearxngProvider
+from api.providers.tavily import TavilyProvider
+from api.quota import (
+    DailyQuotaGuard,
+    estimate_tavily_extract_credits,
+    estimate_tavily_search_credits,
+)
+from api.rerank import rerank_candidates
+from api.summary import summarize
+from api.text_utils import canonical_url
 
+app = FastAPI(title="Agent Search Gateway", version="0.2.0")
 
-class SearchRequest(BaseModel):
-    query: str = Field(..., min_length=1)
-    max_results: int = Field(default=MAX_RESULTS, ge=1, le=20)
-    extract_top_k: int = Field(default=EXTRACT_TOP_K, ge=0, le=10)
-    include_summary: bool = True
-
-
-class SearchResult(BaseModel):
-    title: str
-    url: str
-    snippet: str = ""
-    content: str = ""
-    score: float = 0.0
-    source: str
-
-
-class SearchResponse(BaseModel):
-    query: str
-    elapsed_ms: int
-    provider_chain: list[str]
-    summary: str = ""
-    results: list[SearchResult]
-    errors: list[str] = Field(default_factory=list)
-
-
-@dataclass
-class Candidate:
-    title: str
-    url: str
-    snippet: str
-    content: str
-    score: float
-    source: str
-
-
-app = FastAPI(title="Agent Search Gateway", version="0.1.0")
-_reranker: Any | None = None
+search_cache = TTLCache(
+    ttl_seconds=settings.search_cache_ttl_seconds,
+    enabled=settings.cache_enabled,
+)
+content_cache = TTLCache(
+    ttl_seconds=settings.content_cache_ttl_seconds,
+    enabled=settings.cache_enabled,
+)
+quota_guard = DailyQuotaGuard(
+    limits={
+        "tavily": settings.tavily_daily_credit_limit,
+        "brave": settings.brave_daily_credit_limit,
+    }
+)
+extractor = ContentExtractor(settings=settings, cache=content_cache)
+searxng_provider = SearxngProvider(settings=settings)
+tavily_provider = TavilyProvider(settings=settings)
 
 
 def require_auth(
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None),
+    authorization: Optional[str] = Header(default=None),
+    x_api_key: Optional[str] = Header(default=None),
 ) -> None:
-    if not API_KEY:
+    if not settings.api_key:
         return
-    bearer = f"Bearer {API_KEY}"
-    if authorization == bearer or x_api_key == API_KEY:
+    bearer = f"Bearer {settings.api_key}"
+    if authorization == bearer or x_api_key == settings.api_key:
         return
     raise HTTPException(status_code=401, detail="missing or invalid API key")
 
 
 @app.get("/healthz")
-async def healthz() -> dict[str, Any]:
+async def healthz() -> Dict[str, Any]:
     return {
         "ok": True,
-        "searxng_base_urls": SEARXNG_BASE_URLS,
-        "reranker_enabled": RERANKER_ENABLED,
-        "jina_reader_configured": bool(JINA_READER_BASE_URL),
+        "version": app.version,
+        "provider_order": settings.provider_order,
+        "providers": {
+            "searxng": bool(settings.searxng_base_urls),
+            "tavily": tavily_provider.configured,
+            "brave": settings.brave_enabled and bool(settings.brave_api_key),
+        },
+        "searxng_base_urls": settings.searxng_base_urls,
+        "reranker_enabled": settings.reranker_enabled,
+        "jina_reader_configured": bool(settings.jina_reader_base_url),
+        "cache": {
+            "search": search_cache.stats(),
+            "content": content_cache.stats(),
+        },
+        "quota_usage_today": quota_guard.snapshot(),
     }
 
 
 @app.get("/search", response_model=SearchResponse)
 async def search_get(
     q: str = Query(..., min_length=1),
-    max_results: int = Query(default=MAX_RESULTS, ge=1, le=20),
-    extract_top_k: int = Query(default=EXTRACT_TOP_K, ge=0, le=10),
+    max_results: int = Query(default=settings.max_results, ge=1, le=20),
+    extract_top_k: int = Query(default=settings.extract_top_k, ge=0, le=10),
+    provider: str = Query(default="auto"),
     _: None = Depends(require_auth),
 ) -> SearchResponse:
     return await run_search(
-        SearchRequest(query=q, max_results=max_results, extract_top_k=extract_top_k)
+        SearchRequest(
+            query=q,
+            max_results=max_results,
+            extract_top_k=extract_top_k,
+            provider=provider,
+        )
     )
 
 
@@ -130,23 +109,72 @@ async def search_post(
     return await run_search(request)
 
 
+@app.post("/extract")
+@app.post("/tavily/extract")
+@app.post("/compat/tavily/extract")
+async def extract_post(
+    request: ExtractRequest,
+    _: None = Depends(require_auth),
+) -> Dict[str, Any]:
+    return await run_extract(request)
+
+
+@app.post("/tavily/search")
+@app.post("/compat/tavily/search")
+async def tavily_search_post(
+    request: SearchRequest,
+    _: None = Depends(require_auth),
+) -> Dict[str, Any]:
+    response = await run_search(request)
+    output: Dict[str, Any] = {
+        "query": response.query,
+        "results": [
+            {
+                "title": item.title,
+                "url": item.url,
+                "content": item.snippet or item.content[:600],
+                "score": item.score,
+                "raw_content": item.content or None,
+            }
+            for item in response.results
+        ],
+        "response_time": round(response.elapsed_ms / 1000, 3),
+        "usage": {"credits": 0},
+        "request_id": str(uuid4()),
+    }
+    if request.include_answer or request.include_summary:
+        output["answer"] = response.summary
+    return output
+
+
 async def run_search(request: SearchRequest) -> SearchResponse:
     started = time.perf_counter()
-    errors: list[str] = []
-    provider_chain: list[str] = []
+    cache_payload = request_to_cache_payload(request)
+    key = cache_key("search", cache_payload)
+    cached = search_cache.get(key)
+    if cached is not None:
+        response = copy_search_response(cached)
+        response.elapsed_ms = int((time.perf_counter() - started) * 1000)
+        response.provider_chain = ["cache", *response.provider_chain]
+        return response
 
-    candidates = await search_with_fallback(
-        request.query, request.max_results, provider_chain, errors
-    )
-    candidates = dedupe(candidates)
+    errors: List[str] = []
+    provider_chain: List[str] = []
 
-    top_for_extraction = candidates[: request.extract_top_k]
-    await enrich_contents(top_for_extraction, errors)
+    outcome = await search_with_router(request, provider_chain, errors)
+    candidates = dedupe(outcome.candidates)
 
-    ranked = rerank_candidates(request.query, candidates)[: request.max_results]
-    summary = await summarize(request.query, ranked, errors) if request.include_summary else ""
+    top_for_extraction = [
+        item for item in candidates[: request.extract_top_k] if not item.content
+    ]
+    await extractor.enrich_candidates(top_for_extraction, errors)
 
-    return SearchResponse(
+    ranked = rerank_candidates(request.query, candidates, settings)[: request.max_results]
+    summary = ""
+    if request.include_summary:
+        summary = outcome.summary or await summarize(request.query, ranked, errors, settings)
+
+    response = SearchResponse(
         query=request.query,
         elapsed_ms=int((time.perf_counter() - started) * 1000),
         provider_chain=provider_chain,
@@ -154,194 +182,108 @@ async def run_search(request: SearchRequest) -> SearchResponse:
         results=[SearchResult(**item.__dict__) for item in ranked],
         errors=errors,
     )
+    search_cache.set(key, copy_search_response(response))
+    return response
 
 
-async def search_with_fallback(
-    query: str,
-    max_results: int,
-    provider_chain: list[str],
-    errors: list[str],
-) -> list[Candidate]:
-    for base_url in SEARXNG_BASE_URLS:
-        try:
-            results = await search_searxng(base_url, query, max_results)
+async def search_with_router(
+    request: SearchRequest,
+    provider_chain: List[str],
+    errors: List[str],
+):
+    explicit_provider = request.provider != "auto"
+    order = [request.provider] if explicit_provider else settings.provider_order
+
+    for provider in order:
+        provider = provider.lower()
+        if provider == "tavily":
+            if not tavily_provider.configured:
+                if explicit_provider:
+                    errors.append("tavily provider is not enabled or missing TAVILY_API_KEY")
+                continue
+            credits = estimate_tavily_search_credits(
+                request.search_depth or settings.tavily_search_depth
+            )
+            decision = quota_guard.try_consume("tavily", credits)
+            if not decision.allowed:
+                errors.append(decision.reason)
+                continue
+            outcome = await tavily_provider.search(request, errors)
+            if outcome.candidates:
+                provider_chain.append(outcome.provider)
+                return outcome
+        elif provider == "searxng":
+            outcome = await searxng_provider.search(
+                request.query,
+                request.max_results,
+                errors,
+            )
+            if outcome.candidates:
+                provider_chain.append(outcome.provider)
+                return outcome
+        elif provider == "brave":
+            if explicit_provider:
+                errors.append("brave provider is planned but not implemented")
+        else:
+            errors.append(f"unknown provider: {provider}")
+
+    outcome = await searxng_provider.search(request.query, request.max_results, errors)
+    if outcome.candidates:
+        provider_chain.append(outcome.provider)
+    return outcome
+
+
+async def run_extract(request: ExtractRequest) -> Dict[str, Any]:
+    started = time.perf_counter()
+    errors: List[str] = []
+    urls = normalize_urls(request.urls)
+    provider_chain: List[str] = []
+    usage_credits = 0
+
+    explicit_provider = request.provider != "auto"
+    order = [request.provider] if explicit_provider else settings.provider_order
+    results = []
+    failed = []
+
+    for provider in [item.lower() for item in order]:
+        if provider == "tavily":
+            if not tavily_provider.configured:
+                if explicit_provider:
+                    errors.append("tavily provider is not enabled or missing TAVILY_API_KEY")
+                continue
+            credits = estimate_tavily_extract_credits(len(urls), request.extract_depth)
+            decision = quota_guard.try_consume("tavily", credits)
+            if not decision.allowed:
+                errors.append(decision.reason)
+                continue
+            results, failed, usage_credits = await tavily_provider.extract(request, errors)
             if results:
-                provider_chain.append(f"searxng:{netloc(base_url)}")
-                return results
-            errors.append(f"searxng returned no results: {base_url}")
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"searxng failed: {base_url}: {type(exc).__name__}: {exc}")
-    return []
+                provider_chain.append("tavily")
+                break
+        elif provider in {"searxng", "local"}:
+            results, failed = await extractor.extract_urls(urls, errors)
+            if results:
+                provider_chain.append("local")
+                break
 
+    if not results and not provider_chain:
+        results, failed = await extractor.extract_urls(urls, errors)
+        provider_chain.append("local")
 
-async def search_searxng(base_url: str, query: str, max_results: int) -> list[Candidate]:
-    params = {
-        "q": query,
-        "format": "json",
-        "language": "auto",
-        "safesearch": "0",
+    return {
+        "results": [model_to_dict(result) for result in results],
+        "failed_results": failed,
+        "response_time": round(time.perf_counter() - started, 3),
+        "usage": {"credits": usage_credits},
+        "request_id": str(uuid4()),
+        "provider_chain": provider_chain,
+        "errors": errors,
     }
-    async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS, follow_redirects=True) as client:
-        response = await client.get(f"{base_url}/search", params=params)
-        response.raise_for_status()
-        payload = response.json()
-
-    items: list[Candidate] = []
-    for index, result in enumerate(payload.get("results", [])):
-        url = clean_url(str(result.get("url", "")))
-        if not url:
-            continue
-        title = clean_text(str(result.get("title") or url))
-        snippet = clean_text(str(result.get("content") or result.get("snippet") or ""))
-        engine = result.get("engine") or result.get("engines") or "searxng"
-        score = float(max_results - index) / max(max_results, 1)
-        items.append(
-            Candidate(
-                title=title,
-                url=url,
-                snippet=snippet,
-                content="",
-                score=score,
-                source=f"searxng:{engine}",
-            )
-        )
-        if len(items) >= max_results:
-            break
-    return items
 
 
-async def enrich_contents(items: list[Candidate], errors: list[str]) -> None:
-    semaphore = asyncio.Semaphore(4)
-
-    async def enrich(item: Candidate) -> None:
-        async with semaphore:
-            item.content = await extract_content(item.url, errors)
-
-    await asyncio.gather(*(enrich(item) for item in items))
-
-
-async def extract_content(url: str, errors: list[str]) -> str:
-    local = await extract_with_trafilatura(url, errors)
-    if local:
-        return local[:CONTENT_MAX_CHARS]
-    if JINA_READER_BASE_URL:
-        remote = await extract_with_jina_reader(url, errors)
-        if remote:
-            return remote[:CONTENT_MAX_CHARS]
-    return ""
-
-
-async def extract_with_trafilatura(url: str, errors: list[str]) -> str:
-    headers = {"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml"}
-    try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS, follow_redirects=True) as client:
-            response = await client.get(url, headers=headers)
-            response.raise_for_status()
-        extracted = trafilatura.extract(
-            response.text,
-            url=url,
-            include_comments=False,
-            include_tables=False,
-            favor_recall=True,
-            output_format="txt",
-        )
-        return clean_text(extracted or "")
-    except Exception as exc:  # noqa: BLE001
-        errors.append(f"trafilatura failed: {url}: {type(exc).__name__}: {exc}")
-        return ""
-
-
-async def extract_with_jina_reader(url: str, errors: list[str]) -> str:
-    headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "application/json",
-        "x-max-tokens": "6000",
-    }
-    if JINA_API_KEY:
-        headers["Authorization"] = f"Bearer {JINA_API_KEY}"
-    try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS, follow_redirects=True) as client:
-            response = await client.post(
-                f"{JINA_READER_BASE_URL}/",
-                data={"url": url},
-                headers=headers,
-            )
-            response.raise_for_status()
-        content_type = response.headers.get("content-type", "")
-        if "application/json" in content_type:
-            payload = response.json()
-            data = payload.get("data", payload)
-            text = data.get("content") or data.get("text") or data.get("markdown") or ""
-            return clean_text(str(text))
-        return clean_text(response.text)
-    except Exception as exc:  # noqa: BLE001
-        errors.append(f"jina reader failed: {url}: {type(exc).__name__}: {exc}")
-        return ""
-
-
-def rerank_candidates(query: str, candidates: list[Candidate]) -> list[Candidate]:
-    if not candidates:
-        return []
-    docs = [(item.content or item.snippet or item.title)[:4000] for item in candidates]
-    if RERANKER_ENABLED:
-        try:
-            model = get_reranker()
-            rankings = model.rank(query, docs, top_k=len(docs), return_documents=False)
-            ranked: list[Candidate] = []
-            for row in rankings:
-                item = candidates[int(row["corpus_id"])]
-                item.score = float(row["score"])
-                ranked.append(item)
-            return ranked
-        except Exception:  # noqa: BLE001
-            pass
-    return lexical_rerank(query, candidates)
-
-
-def get_reranker() -> Any:
-    global _reranker
-    if _reranker is None:
-        from sentence_transformers import CrossEncoder
-
-        _reranker = CrossEncoder(RERANKER_MODEL, device=RERANKER_DEVICE)
-    return _reranker
-
-
-def lexical_rerank(query: str, candidates: list[Candidate]) -> list[Candidate]:
-    terms = set(tokenize(query))
-    for item in candidates:
-        body = f"{item.title} {item.snippet} {item.content[:2000]}"
-        words = set(tokenize(body))
-        item.score = len(terms & words) / max(len(terms), 1)
-    return sorted(candidates, key=lambda item: item.score, reverse=True)
-
-
-async def summarize(query: str, results: list[Candidate], errors: list[str]) -> str:
-    payload = {
-        "query": query,
-        "results": [item.__dict__ for item in results[:5]],
-    }
-    if SUMMARY_WEBHOOK_URL:
-        try:
-            async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS) as client:
-                response = await client.post(SUMMARY_WEBHOOK_URL, json=payload)
-                response.raise_for_status()
-                data = response.json()
-            return str(data.get("summary") or data.get("text") or "")
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"summary webhook failed: {type(exc).__name__}: {exc}")
-
-    bullets = []
-    for item in results[:3]:
-        text = item.content or item.snippet
-        if text:
-            bullets.append(f"- {item.title}: {text[:280]}")
-    return "\n".join(bullets)
-
-
-def dedupe(candidates: list[Candidate]) -> list[Candidate]:
-    seen: set[str] = set()
-    output: list[Candidate] = []
+def dedupe(candidates: List[Candidate]) -> List[Candidate]:
+    seen: Set[str] = set()
+    output: List[Candidate] = []
     for item in candidates:
         key = canonical_url(item.url)
         if not key or key in seen:
@@ -351,25 +293,19 @@ def dedupe(candidates: list[Candidate]) -> list[Candidate]:
     return output
 
 
-def tokenize(text: str) -> list[str]:
-    return re.findall(r"[\w\u3040-\u30ff\u3400-\u9fff]+", text.lower())
+def request_to_cache_payload(request: SearchRequest) -> Dict[str, Any]:
+    if hasattr(request, "model_dump"):
+        return request.model_dump()
+    return request.dict()
 
 
-def clean_text(text: str) -> str:
-    return re.sub(r"\s+", " ", text or "").strip()
+def model_to_dict(model: Any) -> Dict[str, Any]:
+    if hasattr(model, "model_dump"):
+        return model.model_dump()
+    return model.dict()
 
 
-def clean_url(url: str) -> str:
-    url = url.strip()
-    if not url.startswith(("http://", "https://")):
-        return ""
-    return url
-
-
-def canonical_url(url: str) -> str:
-    parsed = urlparse(url)
-    return f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
-
-
-def netloc(url: str) -> str:
-    return urlparse(url).netloc or url
+def copy_search_response(response: SearchResponse) -> SearchResponse:
+    if hasattr(response, "model_copy"):
+        return response.model_copy(deep=True)
+    return response.copy(deep=True)
