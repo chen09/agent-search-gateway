@@ -40,7 +40,8 @@
 <li style="margin: 6px 0;">Cursor 自动调用自托管检索</li>
 </ul>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">项目仓库：</p>
-<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;"><a href="https://github.com/chen09/agent-search-gateway" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">GitHub - chen09/agent-search-gateway</a></p>
+<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">GitHub：chen09 / agent-search-gateway</p>
+<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">Docker Hub：chen920 / agent-search-gateway</p>
 <h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">为什么不是直接用 Google 或 Perplexity</h2>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">做这个项目之前，我其实也有一个疑问：</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">为什么 agent 需要 Tavily 这种检索 API？直接 Google 搜索不行吗？Perplexity 不也能查资料吗？</strong></p>
@@ -180,7 +181,8 @@ AGENT_SEARCH_GATEWAY_TIMEOUT</code>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 5：agent 只拿 gateway key；真正的 provider keys 留在服务器上，由 gateway 控制。</p>
 <h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">MCP：让 Cursor / Codex / Claude / OpenClaw / Hermes 都能用</h2>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">为了让 agent 真正用上这个 gateway，我做了 MCP server。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">现在 MCP 可以用 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">uvx</code> 直接从 GitHub 跑：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">现在 MCP 可以用 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">uvx</code> 直接从 GitHub 跑。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">微信正文里不贴完整外链，下面是简化示意；可复制版本放在 GitHub README 里。</p>
 <pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
 <span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">json</span><code>{
   &quot;mcpServers&quot;: {
@@ -188,11 +190,11 @@ AGENT_SEARCH_GATEWAY_TIMEOUT</code>
       &quot;command&quot;: &quot;uvx&quot;,
       &quot;args&quot;: [
         &quot;--from&quot;,
-        &quot;git+https://github.com/chen09/agent-search-gateway.git@v0.2.2&quot;,
+        &quot;git+GitHub repo @ v0.2.2&quot;,
         &quot;agent-search-gateway-mcp&quot;
       ],
       &quot;env&quot;: {
-        &quot;AGENT_SEARCH_GATEWAY_URL&quot;: &quot;https://api.agentsearchgateway.com&quot;,
+        &quot;AGENT_SEARCH_GATEWAY_URL&quot;: &quot;api.agentsearchgateway.com&quot;,
         &quot;AGENT_SEARCH_GATEWAY_API_KEY&quot;: &quot;replace-with-your-key&quot;,
         &quot;AGENT_SEARCH_GATEWAY_TIMEOUT&quot;: &quot;90&quot;
       }
@@ -211,9 +213,9 @@ agent_extract</code>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Claude、OpenClaw、Hermes 走的是同一类 MCP 配置，不需要把 Tavily、Brave 这些 provider key 下发给每个客户端。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">注意：MCP 只是让工具可用，不保证 agent 每次都会主动用。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">所以我还准备了 Cursor User Rule。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Cursor 的 User Rules GitHub/GitLab import 里，填仓库 URL：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Cursor 的 User Rules GitHub/GitLab import 里，选择这个仓库：</p>
 <pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
-<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>https://github.com/chen09/agent-search-gateway</code>
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>chen09 / agent-search-gateway</code>
 </pre>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">不要填 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">blob/...mdc</code> 文件 URL。Cursor 实际会 clone repo。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">可复用 rule 文件在：</p>
@@ -239,7 +241,7 @@ agent_extract</code>
     &quot;tavily&quot;: false,
     &quot;brave&quot;: false
   },
-  &quot;searxng_base_urls&quot;: [&quot;http://searxng:8080&quot;]
+  &quot;searxng_base_urls&quot;: [&quot;searxng:8080&quot;]
 }</code>
 </pre>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">然后在几次检索里看到了：</p>
@@ -252,7 +254,7 @@ errors: []</code>
 <span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>Cursor User Rule
   -&gt; Cursor Agent 自动选择 MCP
   -&gt; agent-search-gateway MCP
-  -&gt; https://api.agentsearchgateway.com
+  -&gt; api.agentsearchgateway.com
   -&gt; retrieval-api 0.2.2
   -&gt; SearXNG
   -&gt; provider_chain / results / errors 返回 Cursor</code>
@@ -325,26 +327,31 @@ errors: []</code>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它不是替代某个工具。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它是把这些工具收拢起来，变成自己的基础设施。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">完整项目在这里：</p>
-<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;"><a href="https://github.com/chen09/agent-search-gateway" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">GitHub - chen09/agent-search-gateway</a></p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Docker image：</p>
+<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">GitHub：chen09 / agent-search-gateway</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Docker Hub：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>chen920 / agent-search-gateway</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Docker image name：</p>
 <pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
 <span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>docker.io/chen920/agent-search-gateway:0.2.2</code>
 </pre>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">公网 API：</p>
 <pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
-<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>https://api.agentsearchgateway.com</code>
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>api.agentsearchgateway.com</code>
 </pre>
 <h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">参考资料</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">微信正文里不贴外链。资料来源可以按下面这些名称搜索：</p>
 <ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
-<li style="margin: 6px 0;"><a href="https://docs.tavily.com/documentation/api-credits" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">Tavily Credits &amp; Pricing</a></li>
-<li style="margin: 6px 0;"><a href="https://brave.com/search/api/" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">Brave Search API</a></li>
-<li style="margin: 6px 0;"><a href="https://docs.firecrawl.dev/pt-BR/billing" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">Firecrawl Billing</a></li>
-<li style="margin: 6px 0;"><a href="https://docs.perplexity.ai/docs/search/quickstart" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">Perplexity Search API</a></li>
-<li style="margin: 6px 0;"><a href="https://docs.perplexity.ai/docs/getting-started/pricing" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">Perplexity API Pricing</a></li>
-<li style="margin: 6px 0;"><a href="https://docs.searxng.org/" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">SearXNG Documentation</a></li>
-<li style="margin: 6px 0;"><a href="https://docs.searxng.org/dev/search_api.html" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">SearXNG Search API</a></li>
-<li style="margin: 6px 0;"><a href="https://docs.searxng.org/admin/searx.limiter" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">SearXNG Limiter</a></li>
-<li style="margin: 6px 0;"><a href="https://docs.cursor.com/context/rules" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">Cursor Rules</a></li>
+<li style="margin: 6px 0;">Tavily Credits &amp; Pricing</li>
+<li style="margin: 6px 0;">Brave Search API</li>
+<li style="margin: 6px 0;">Firecrawl Billing</li>
+<li style="margin: 6px 0;">Perplexity Search API</li>
+<li style="margin: 6px 0;">Perplexity API Pricing</li>
+<li style="margin: 6px 0;">SearXNG Documentation</li>
+<li style="margin: 6px 0;">SearXNG Search API</li>
+<li style="margin: 6px 0;">SearXNG Limiter</li>
+<li style="margin: 6px 0;">Cursor Rules</li>
 </ul>
     </article>
   </div>

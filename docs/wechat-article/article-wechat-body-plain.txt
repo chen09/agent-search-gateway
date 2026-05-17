@@ -1,6 +1,8 @@
 一天做了一个自托管 Agent Search Gateway：从 Tavily 额度焦虑到全栈上线
 
-项目仓库：https://github.com/chen09/agent-search-gateway
+项目仓库：GitHub chen09 / agent-search-gateway
+
+Docker Hub：chen920 / agent-search-gateway
 
 这篇文章记录一个很具体的工程实践：Cursor、Codex、Claude、OpenClaw、Hermes 这些 agent 都要查资料。如果全都用 Tavily，免费额度很快就不够。
 

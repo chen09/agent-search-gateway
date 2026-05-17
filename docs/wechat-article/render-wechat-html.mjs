@@ -24,10 +24,7 @@ function escapeHtml(text) {
 
 function inlineMarkdown(text) {
   let out = escapeHtml(text);
-  out = out.replace(
-    /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; border-bottom: 1px solid #93c5fd;">$1</a>',
-  );
+  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, "$1：$2");
   out = out.replace(
     /`([^`]+)`/g,
     '<code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">$1</code>',
@@ -41,9 +38,10 @@ function inlineMarkdown(text) {
 
 function paragraphHtml(text) {
   if (
-    text.includes("GitHub - chen09/agent-search-gateway") ||
+    text.includes("GitHub：chen09") ||
+    text.includes("Docker Hub：chen920") ||
     text.includes("docker.io/chen920/agent-search-gateway") ||
-    text.includes("https://api.agentsearchgateway.com")
+    text.includes("api.agentsearchgateway.com")
   ) {
     return `<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">${inlineMarkdown(text)}</p>`;
   }
