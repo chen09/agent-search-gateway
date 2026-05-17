@@ -64,6 +64,8 @@ The source file for Docker Hub's long overview is:
 docs/DOCKER_HUB_OVERVIEW.md
 ```
 
+Keep this overview trilingual because Docker Hub only displays one public overview page. The current order is English, Chinese, then Japanese.
+
 It is synchronized by:
 
 ```text
