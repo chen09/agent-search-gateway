@@ -10,6 +10,8 @@ This folder contains publishing material for a Chinese WeChat article about Agen
 - `article-wechat-body.html`: WeChat body paste version without the H1 title.
 - `article-wechat-ready-no-images.html`: full HTML preview with image placeholders.
 - `article-wechat-body-no-images.html`: WeChat body paste version with image placeholders.
+- `article-wechat-copy.html`: copy-only HTML body without the H1 title or helper note.
+- `article-wechat-copy-no-images.html`: copy-only HTML body with image placeholders.
 - `article-draft.md`: working outline and tone notes.
 - `article-wechat-body-plain.txt`: short plain-text handoff note.
 - `research-notes.md`: source notes, competitor/provider context, and verified project evidence.
@@ -28,8 +30,8 @@ This folder contains publishing material for a Chinese WeChat article about Agen
    node docs/wechat-article/render-wechat-html.mjs
    ```
 
-5. Open `article-wechat-body.html` in a browser, select the white article area, and paste it into the WeChat editor. Fill the WeChat title separately from `article-title.txt`.
+5. Open `article-wechat-copy.html` in a browser, use Select All / Copy, and paste it into the WeChat editor body. Fill the WeChat title separately from `article-title.txt`.
 
-If the images are not ready yet, use `article-wechat-body-no-images.html` first. It keeps styled `图片待补` placeholders in the body so the article can be saved as a WeChat draft and updated later.
+If the images are not ready yet, use `article-wechat-copy-no-images.html` first. It keeps styled `图片待补` placeholders in the body so the article can be saved as a WeChat draft and updated later.
 
 Do not include real `.env` values, API keys, Docker Hub tokens, SSH details, or raw server logs in the article.

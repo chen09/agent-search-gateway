@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>公众号正文纯复制版</title>
+</head>
+<body style="margin: 0; padding: 24px 18px 48px; background: #ffffff; color: #263244;">
+  <article id="wechat-article" style="box-sizing: border-box; max-width: 680px; margin: 0 auto; padding: 0; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;">
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-00-hero-agent-search-gateway.png" alt="头图：从 Tavily 额度焦虑到自托管 Agent Search Gateway" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这篇文章记录一个很具体的工程实践。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">起因不是一个宏大的产品规划，而是一个很朴素的问题：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">Cursor、Codex、Claude、OpenClaw、Hermes 这些 agent 都要查资料。如果全都用 Tavily，免费额度很快就不够。</strong></p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">一开始我想做的是：能不能做一个 Tavily 的 free 代替品。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">做着做着，目标变清楚了：这不应该只是一个替代品，而应该是一个 gateway。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">也就是：给所有 agent 一个统一的检索入口。底层可以先走自托管 SearXNG，也可以接 Tavily 做保底，将来还可以接 Brave、Firecrawl、Crawl4AI 或其他检索/抽取后端。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">最后这个项目从空仓库开始，在一天内跑通了一个完整闭环。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这里的重点不是“写了一个搜索接口”。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">而是从程序、容器、CI/CD、镜像发布、云服务器、域名、HTTPS，到 MCP 和 Cursor Rules，全链路都打通了。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">也就是说，它已经不是一个本地 demo，而是一个可以被真实 agent 使用的自托管检索基础设施。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这条链路包括：</p>
+<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
+<li style="margin: 6px 0;">Python API</li>
+<li style="margin: 6px 0;">Docker Compose</li>
+<li style="margin: 6px 0;">Docker Hub 发布</li>
+<li style="margin: 6px 0;">GitHub Actions CI/CD</li>
+<li style="margin: 6px 0;">云服务器 Docker 部署</li>
+<li style="margin: 6px 0;">Nginx 反代</li>
+<li style="margin: 6px 0;">域名</li>
+<li style="margin: 6px 0;">Let’s Encrypt 免费证书</li>
+<li style="margin: 6px 0;">MCP</li>
+<li style="margin: 6px 0;">Cursor User Rules</li>
+<li style="margin: 6px 0;">Cursor 自动调用自托管检索</li>
+</ul>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">项目仓库：</p>
+<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">GitHub：chen09 / agent-search-gateway</p>
+<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">Docker Hub：chen920 / agent-search-gateway</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">为什么不是直接用 Google 或 Perplexity</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">做这个项目之前，我其实也有一个疑问：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">为什么 agent 需要 Tavily 这种检索 API？直接 Google 搜索不行吗？Perplexity 不也能查资料吗？</strong></p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">调研之后，我的理解变了。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Google、Perplexity、Tavily 解决的是相邻但不同的问题。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Google 更像人的搜索入口。人会看页面、点链接、判断来源、调整关键词。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Perplexity 更像答案引擎。它会把搜索和生成融合起来，直接给人一个带引用的答案。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Tavily、Brave Search API、Firecrawl、Perplexity Search API 这类东西，更接近 agent 的工具层。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">agent 需要的不是一个漂亮搜索框，而是：</p>
+<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
+<li style="margin: 6px 0;">稳定 API</li>
+<li style="margin: 6px 0;">JSON 结果</li>
+<li style="margin: 6px 0;">来源 URL</li>
+<li style="margin: 6px 0;">摘要和正文抽取</li>
+<li style="margin: 6px 0;">错误信息</li>
+<li style="margin: 6px 0;">成本和额度控制</li>
+<li style="margin: 6px 0;">可重试</li>
+<li style="margin: 6px 0;">可 fallback</li>
+<li style="margin: 6px 0;">可观测</li>
+</ul>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这也是 Tavily 这类工具有价值的原因。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">所以我的结论不是“这些商业检索 API 没用”。恰恰相反，它们证明了这个需求是真实的。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">只是如果每天多个 agent 都要用，额度、成本和可控性就会变成问题。</p>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-01-human-search-vs-agent-retrieval.png" alt="图 1：人用搜索和 Agent 用检索不是一回事" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 1：人类搜索看的是页面体验；agent 检索需要稳定结构、可抽取正文、可观测链路和错误处理。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">竞品调研之后，目标变成了 Gateway</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">我看了几个方向。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Tavily 很适合 AI agent。官方文档里，它有 Search、Extract、Map、Crawl，并且是 credit-based 计费。免费额度可以开始用，但不是无限用。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Brave Search API 有自己的搜索索引，也明确面向 AI apps。它很有吸引力，但仍然要考虑费用、速率和预算。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Firecrawl 更偏抓取、抽取、爬取、动态页面处理。它适合复杂页面，但不是首版必须依赖。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Perplexity Search API 则更能说明一件事：AI 时代的 search API 不只是关键词搜索，而是要给开发者提供 ranked results、过滤、抽取和实时网页数据。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">所以项目目标变成：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">不要把某一个 provider 当成唯一答案，而是做一个 provider router。</strong></p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">也就是说：</p>
+<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
+<li style="margin: 6px 0;">SearXNG 做默认自托管 search provider</li>
+<li style="margin: 6px 0;">trafilatura 做本地正文抽取</li>
+<li style="margin: 6px 0;">Jina Reader 做可选 fallback</li>
+<li style="margin: 6px 0;">Tavily 做兼容/保底 provider</li>
+<li style="margin: 6px 0;">Brave 先预留，等预算保护做好后再启用</li>
+<li style="margin: 6px 0;">后续再考虑 Crawl4AI 或 Firecrawl 类能力</li>
+</ul>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-02-provider-gateway-map.png" alt="图 2：从单一 Tavily 依赖到 Provider Gateway" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 2：目标不是替换某一个厂商，而是把自托管和 hosted providers 收拢到一个统一入口。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">这个 Gateway 到底做什么</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">现在的 Agent Search Gateway 提供一个统一 API：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>GET /search
+POST /search
+POST /extract</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">返回统一 JSON：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">json</span><code>{
+  &quot;query&quot;: &quot;string&quot;,
+  &quot;elapsed_ms&quot;: 1234,
+  &quot;provider_chain&quot;: [&quot;searxng:searxng:8080&quot;],
+  &quot;summary&quot;: &quot;string&quot;,
+  &quot;results&quot;: [],
+  &quot;errors&quot;: []
+}</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这里最重要的是两个字段：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>provider_chain
+errors</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">agent 不只是拿到结果，还能知道这次到底走了哪个 provider，有没有 fallback，有没有失败。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这比“给我几个搜索结果”更适合工程化。</p>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-03-gateway-architecture.png" alt="图 3：Agent Search Gateway 架构图" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 3：agent 只面对一个 gateway；gateway 负责 provider routing、正文抽取、缓存、rerank 和 fallback。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">技术栈：小而完整</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">首版我故意没有做大。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">但“小”不等于只做半截。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这个项目的完整性在于，它把一个 agent tool 真正需要的几层都接上了：</p>
+<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
+<li style="margin: 6px 0;">程序层：统一 search / extract API</li>
+<li style="margin: 6px 0;">provider 层：SearXNG 优先，Tavily/Brave/Jina 预留</li>
+<li style="margin: 6px 0;">抽取层：trafilatura + 可选 Jina Reader</li>
+<li style="margin: 6px 0;">运行层：Docker Compose</li>
+<li style="margin: 6px 0;">发布层：GitHub Actions + Docker Hub</li>
+<li style="margin: 6px 0;">部署层：Ubuntu server + Nginx + Let’s Encrypt</li>
+<li style="margin: 6px 0;">接入层：MCP + Rules / Skills</li>
+</ul>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">后端用 Python + FastAPI。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">搜索默认走 SearXNG。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">正文抽取用 trafilatura。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">缓存先用进程内 TTL cache。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Valkey 已经在 Docker Compose 里，后面可以升级成共享缓存。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">reranker 做成可选能力，默认不影响基础部署。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">部署用 Docker Compose。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">发布用 GitHub Actions 自动推 Docker Hub。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">公网服务用 Ubuntu server + Docker + Nginx + Let’s Encrypt。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">域名用：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>api.agentsearchgateway.com</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">root domain 以后可以做文档站或 landing page。</p>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-04-full-stack-deployment.png" alt="图 4：从代码到公网 API 的全栈链路" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 4：从程序到 Docker、CI/CD、Docker Hub、云服务器、Nginx、HTTPS、域名和 MCP，全部打通成一条完整链路。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">Secrets 边界：provider key 不给 agent</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这个项目里有一个很重要的边界：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">agent 不应该直接拿 Tavily、Brave、Jina、MiniMax、DeepSeek 这些 provider key。</strong></p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">provider key 只放在服务器的 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">.env</code>。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">agent 只拿 gateway 的访问 key。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">也就是说，服务器 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">.env</code> 放：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>RETRIEVAL_API_KEY
+TAVILY_API_KEY
+BRAVE_API_KEY
+JINA_API_KEY
+MINIMAX_API_KEY
+DEEPSEEK_API_KEY</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">MCP client config 只放：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>AGENT_SEARCH_GATEWAY_URL
+AGENT_SEARCH_GATEWAY_API_KEY
+AGENT_SEARCH_GATEWAY_TIMEOUT</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这样做有几个好处。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">第一，provider key 不会散落到各个 agent 配置里。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">第二，切换 provider 不需要改每个 agent。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">第三，额度保护可以放在 gateway 层统一做。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">第四，后续做限流、审计、缓存、fallback，都有一个统一入口。</p>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-05-secret-boundary.png" alt="图 5：Secrets 边界" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 5：agent 只拿 gateway key；真正的 provider keys 留在服务器上，由 gateway 控制。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">MCP：让 Cursor / Codex / Claude / OpenClaw / Hermes 都能用</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">为了让 agent 真正用上这个 gateway，我做了 MCP server。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">现在 MCP 可以用 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">uvx</code> 直接从 GitHub 跑。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">微信正文里不贴完整外链，下面是简化示意；可复制版本放在 GitHub README 里。</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">json</span><code>{
+  &quot;mcpServers&quot;: {
+    &quot;agent-search-gateway&quot;: {
+      &quot;command&quot;: &quot;uvx&quot;,
+      &quot;args&quot;: [
+        &quot;--from&quot;,
+        &quot;git+GitHub repo @ v0.2.2&quot;,
+        &quot;agent-search-gateway-mcp&quot;
+      ],
+      &quot;env&quot;: {
+        &quot;AGENT_SEARCH_GATEWAY_URL&quot;: &quot;api.agentsearchgateway.com&quot;,
+        &quot;AGENT_SEARCH_GATEWAY_API_KEY&quot;: &quot;replace-with-your-key&quot;,
+        &quot;AGENT_SEARCH_GATEWAY_TIMEOUT&quot;: &quot;90&quot;
+      }
+    }
+  }
+}</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">MCP 暴露 3 个 tools：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>agent_gateway_health
+agent_search
+agent_extract</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这样 Cursor、Codex、Claude、OpenClaw、Hermes 都可以接同一个检索网关。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">当前 Cursor 已经完成真实检索验证，Codex 里也已经配置了同一个 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">agent-search-gateway</code> MCP。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Claude、OpenClaw、Hermes 走的是同一类 MCP 配置，不需要把 Tavily、Brave 这些 provider key 下发给每个客户端。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">注意：MCP 只是让工具可用，不保证 agent 每次都会主动用。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">所以我还准备了 Cursor User Rule。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Cursor 的 User Rules GitHub/GitLab import 里，选择这个仓库：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>chen09 / agent-search-gateway</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">不要填 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">blob/...mdc</code> 文件 URL。Cursor 实际会 clone repo。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">可复用 rule 文件在：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>rules/agent-search-gateway-user-rule.mdc</code>
+</pre>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-06-agent-client-integration.png" alt="图 6：Agent 客户端接入图" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 6：MCP 负责工具接入，User Rule / Skill 负责告诉 agent 什么时候应该用。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">真实验证：Cursor 已经自动走了我们的 Gateway</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">最关键的一步，不是“我配好了 MCP”。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">而是 Cursor 在普通研究任务里真的调用了它。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">同时，Codex 里也已经接入同一个 MCP。这个项目开始变成一个多 agent 共用的检索层，而不是 Cursor 专用插件。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">先看到 health：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">json</span><code>{
+  &quot;ok&quot;: true,
+  &quot;version&quot;: &quot;0.2.2&quot;,
+  &quot;provider_order&quot;: [&quot;searxng&quot;, &quot;tavily&quot;],
+  &quot;providers&quot;: {
+    &quot;searxng&quot;: true,
+    &quot;tavily&quot;: false,
+    &quot;brave&quot;: false
+  },
+  &quot;searxng_base_urls&quot;: [&quot;searxng:8080&quot;]
+}</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">然后在几次检索里看到了：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>provider_chain: [&quot;searxng:searxng:8080&quot;]
+errors: []</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这说明链路已经跑通：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>Cursor User Rule
+  -&gt; Cursor Agent 自动选择 MCP
+  -&gt; agent-search-gateway MCP
+  -&gt; api.agentsearchgateway.com
+  -&gt; retrieval-api 0.2.2
+  -&gt; SearXNG
+  -&gt; provider_chain / results / errors 返回 Cursor</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这也是我最满意的地方。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">不是做了一个 demo，也不是只把 Docker 跑起来。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">而是一个从公网 API 到 MCP tool，再到 Cursor 自动选择工具的闭环已经真实发生。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">程序可运行，镜像可分发，服务器可访问，证书可用，agent 可调用，调用证据可观测。</p>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-07-validation-dashboard.png" alt="图 7：验证结果仪表盘" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 7：provider_chain 明确显示走的是自托管 SearXNG，而不是 Tavily 或 Cursor 内置搜索。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">这件事为什么只用了一天</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这个项目从空仓库到公网可用，只用了大约一天。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">代码、Docker、CI/CD、Docker Hub、域名、Nginx、HTTPS、MCP、Cursor Rule、文档，基本都是通过 AI 完成的。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这次主要是 Codex，GPT-5.5，单 agent 贯穿到底。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这件事值得记录，是因为一天内完成的不是某个孤立功能，而是从想法到可用服务的完整交付链路。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">写代码只是其中一部分。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">服务能不能跑，镜像能不能发，域名和 HTTPS 能不能通，MCP 能不能接上，Cursor 是否真的会调用，这些都被验证之后，它才从“代码仓库”变成了“可以被 agent 使用的检索基础设施”。</p>
+<figure style="margin: 30px 0 18px; padding: 0;">
+<img src="./images/fig-08-one-day-vibe-coding-roadmap.png" alt="图 8：一天完成的 Vibe Coding 全栈路线" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+</figure>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 8：一天内完成的不是单点功能，而是一条从想法到公网服务、再到 agent 自动调用的完整链路。</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">它还不是生产级</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">现在这个项目能用，但我不会说它已经生产级。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">还需要继续做：</p>
+<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
+<li style="margin: 6px 0;">SSRF 防护</li>
+<li style="margin: 6px 0;">per-client rate limit</li>
+<li style="margin: 6px 0;">request size limit</li>
+<li style="margin: 6px 0;">Docker healthcheck</li>
+<li style="margin: 6px 0;">provider timeout budget</li>
+<li style="margin: 6px 0;">circuit breaker</li>
+<li style="margin: 6px 0;">Valkey 持久缓存</li>
+<li style="margin: 6px 0;">结构化脱敏日志</li>
+<li style="margin: 6px 0;">更多 provider 的健康检查</li>
+<li style="margin: 6px 0;">更完整的 CI 测试</li>
+<li style="margin: 6px 0;">root domain 的文档站或状态页</li>
+</ul>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">但这不影响它当前的价值。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它已经证明了一件事：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">一个自托管、开源优先、可 fallback 的 agent search gateway，是完全可行的。</strong></p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">我的结论</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这次项目最大的收获，不是省下 Tavily 的一点额度。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">而是我真正理解了 AI agent 为什么需要检索 API。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">也理解了为什么单一 provider 不够。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">一个好的 agent 检索层，应该有统一入口、可观测链路、provider routing、fallback、缓存、限流和安全边界。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这就是 Agent Search Gateway 的价值。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它不是替代某个工具。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它是把这些工具收拢起来，变成自己的基础设施。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">完整项目在这里：</p>
+<p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">GitHub：chen09 / agent-search-gateway</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Docker Hub：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>chen920 / agent-search-gateway</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Docker image name：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>docker.io/chen920/agent-search-gateway:0.2.2</code>
+</pre>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">公网 API：</p>
+<pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">text</span><code>api.agentsearchgateway.com</code>
+</pre>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">参考资料</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">微信正文里不贴外链。资料来源可以按下面这些名称搜索：</p>
+<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
+<li style="margin: 6px 0;">Tavily Credits &amp; Pricing</li>
+<li style="margin: 6px 0;">Brave Search API</li>
+<li style="margin: 6px 0;">Firecrawl Billing</li>
+<li style="margin: 6px 0;">Perplexity Search API</li>
+<li style="margin: 6px 0;">Perplexity API Pricing</li>
+<li style="margin: 6px 0;">SearXNG Documentation</li>
+<li style="margin: 6px 0;">SearXNG Search API</li>
+<li style="margin: 6px 0;">SearXNG Limiter</li>
+<li style="margin: 6px 0;">Cursor Rules</li>
+</ul>
+  </article>
+</body>
+</html>

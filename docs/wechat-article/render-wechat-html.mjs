@@ -7,6 +7,8 @@ const fullOutputPath = path.join(root, "article-wechat-ready.html");
 const bodyOutputPath = path.join(root, "article-wechat-body.html");
 const noImageFullOutputPath = path.join(root, "article-wechat-ready-no-images.html");
 const noImageBodyOutputPath = path.join(root, "article-wechat-body-no-images.html");
+const copyOnlyOutputPath = path.join(root, "article-wechat-copy.html");
+const noImageCopyOnlyOutputPath = path.join(root, "article-wechat-copy-no-images.html");
 
 const md = fs.readFileSync(sourcePath, "utf8");
 const title =
@@ -230,6 +232,23 @@ ${content}
 `;
 }
 
+function copyOnlyPage(content, pageTitle) {
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(pageTitle)}</title>
+</head>
+<body style="margin: 0; padding: 24px 18px 48px; background: #ffffff; color: #263244;">
+  <article id="wechat-article" style="box-sizing: border-box; max-width: 680px; margin: 0 auto; padding: 0; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;">
+${content}
+  </article>
+</body>
+</html>
+`;
+}
+
 const fullHtml = page(
   renderMarkdown(md, { includeTitle: true }),
   title,
@@ -254,12 +273,26 @@ const noImageBodyHtml = page(
   "推荐粘贴版：不包含 H1 标题，图片以占位块显示。公众号标题请单独填写。",
 );
 
+const copyOnlyHtml = copyOnlyPage(
+  renderMarkdown(md, { includeTitle: false }),
+  "公众号正文纯复制版",
+);
+
+const noImageCopyOnlyHtml = copyOnlyPage(
+  renderMarkdown(md, { includeTitle: false, imageMode: "placeholder" }),
+  "公众号正文纯复制版（无图片占位）",
+);
+
 fs.writeFileSync(fullOutputPath, fullHtml);
 fs.writeFileSync(bodyOutputPath, bodyHtml);
 fs.writeFileSync(noImageFullOutputPath, noImageFullHtml);
 fs.writeFileSync(noImageBodyOutputPath, noImageBodyHtml);
+fs.writeFileSync(copyOnlyOutputPath, copyOnlyHtml);
+fs.writeFileSync(noImageCopyOnlyOutputPath, noImageCopyOnlyHtml);
 
 console.log(`wrote ${fullOutputPath}`);
 console.log(`wrote ${bodyOutputPath}`);
 console.log(`wrote ${noImageFullOutputPath}`);
 console.log(`wrote ${noImageBodyOutputPath}`);
+console.log(`wrote ${copyOnlyOutputPath}`);
+console.log(`wrote ${noImageCopyOnlyOutputPath}`);
