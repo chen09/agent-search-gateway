@@ -36,6 +36,7 @@ local reranker
 - agent が使える `agent-search-gateway` skill。
 - 後続の Cursor / Codex / MiniMax / DeepSeek 連携用 summary webhook placeholder。
 - Docker Compose deployment。
+- GitHub Actions CI checks と Docker Hub image publishing。
 
 未実装：
 

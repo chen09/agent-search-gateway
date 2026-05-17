@@ -36,6 +36,7 @@ Current MVP capabilities:
 - Installable `agent-search-gateway` skill for agents that support skills.
 - Summary webhook placeholder for later Cursor / Codex / MiniMax / DeepSeek integration.
 - Docker Compose deployment.
+- GitHub Actions CI checks and Docker Hub image publishing.
 
 Not yet implemented:
 

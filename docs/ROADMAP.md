@@ -45,7 +45,7 @@ This project is a self-hosted retrieval gateway for coding and research agents. 
 - Add request size limits, per-client rate limits, and structured redacted logs.
 - Add provider timeout budgets and circuit breakers.
 - Keep Docker Compose verification in release checks.
-- Add CI for unit tests, import checks, and Docker build checks.
+- Expand CI beyond the current unit/import/Docker build checks with Docker Compose config validation and release smoke tests.
 
 ## Phase 6: Agent Integration
 

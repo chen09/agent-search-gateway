@@ -34,6 +34,6 @@ This project is now usable as a local, self-hosted retrieval gateway for agents.
 
 ## Priority 6: Release Quality
 
-- Add GitHub Actions for Python syntax checks, unit tests, MCP import checks, and Docker build checks.
+- Expand GitHub Actions beyond the current Python/unit/MCP import/Docker build checks with Compose config validation and release smoke tests.
 - Add tagged release notes for each version.
-- Choose a LICENSE before treating the repository as a public reusable package.
+- Keep release notes and Docker Hub overview aligned for every tagged release.

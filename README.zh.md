@@ -36,6 +36,7 @@ trafilatura 或可选 Jina Reader 抽取正文
 - 可安装的 `agent-search-gateway` skill。
 - summary webhook 占位，后续可接 Cursor / Codex / MiniMax / DeepSeek。
 - Docker Compose 部署。
+- GitHub Actions CI 检查和 Docker Hub 镜像发布。
 
 暂未实现：
 

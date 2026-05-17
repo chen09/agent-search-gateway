@@ -248,6 +248,7 @@ Local and repo checks completed during the build:
 - `uvx --from git+https://github.com/chen09/agent-search-gateway.git@v0.2.2 agent-search-gateway-mcp` started and listed MCP tools.
 - MCP `agent_gateway_health` returned `ok=true`.
 - Public health endpoint returned `version=0.2.2`.
+- GitHub Actions CI workflow now covers Python compile checks, unit tests, MCP import checks, and Docker image build checks.
 - GitHub Actions Docker image workflow completed successfully for `v0.2.2`.
 - GitHub Actions Docker Hub description workflow completed successfully after documentation updates.
 
@@ -309,7 +310,7 @@ The progress stayed fast because decisions were kept explicit:
 Highest value next steps:
 
 - Add Docker healthchecks for `retrieval-api`, `searxng`, and `valkey`.
-- Add CI for Python syntax, import checks, unit tests, MCP startup, and Docker build.
+- Expand CI with Docker Compose config validation, MCP startup smoke, and release smoke tests.
 - Add SSRF protection before marketing the public API broadly.
 - Add per-client rate limits and request size limits.
 - Move cache from in-process TTL to Valkey.

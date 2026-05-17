@@ -1,0 +1,11 @@
+一天做了一个自托管 Agent Search Gateway：从 Tavily 额度焦虑到全栈上线
+
+项目仓库：https://github.com/chen09/agent-search-gateway
+
+这篇文章记录一个很具体的工程实践：Cursor、Codex、Claude、OpenClaw、Hermes 这些 agent 都要查资料。如果全都用 Tavily，免费额度很快就不够。
+
+一开始我想做的是：能不能做一个 Tavily 的 free 代替品。做着做着，目标变清楚了：这不应该只是一个替代品，而应该是一个 gateway。
+
+也就是：给所有 agent 一个统一的检索入口。底层可以先走自托管 SearXNG，也可以接 Tavily 做保底，将来还可以接 Brave、Firecrawl、Crawl4AI 或其他检索/抽取后端。
+
+完整正文见 article-wechat-ready.md。
