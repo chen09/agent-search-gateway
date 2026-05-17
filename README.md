@@ -1,5 +1,7 @@
 # Agent Search Gateway
 
+Languages: [English](README.md) | [中文](README.zh.md) | [日本語](README.ja.md)
+
 Agent Search Gateway is a self-hostable search and web-retrieval gateway for AI agents. It gives Cursor, ChatGPT Codex, MiniMax, DeepSeek, and similar agents one stable `/search` API while the gateway handles provider routing, extraction, reranking, and fallback.
 
 The first version is intentionally small and open-source first: SearXNG for local search, trafilatura for local content extraction, an optional Jina Reader fallback, and an optional local CrossEncoder reranker. Hosted APIs such as Tavily and Brave are compatibility or fallback providers only; they are not required for the MVP.

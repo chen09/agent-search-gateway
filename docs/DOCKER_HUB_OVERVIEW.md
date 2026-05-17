@@ -5,6 +5,9 @@ Self-hosted search and extraction gateway for AI agents. This image runs the `re
 Source and full documentation:
 
 - GitHub: https://github.com/chen09/agent-search-gateway
+- English README: https://github.com/chen09/agent-search-gateway/blob/main/README.md
+- Chinese README: https://github.com/chen09/agent-search-gateway/blob/main/README.zh.md
+- Japanese README: https://github.com/chen09/agent-search-gateway/blob/main/README.ja.md
 - Environment guide: https://github.com/chen09/agent-search-gateway/blob/main/docs/ENVIRONMENT.md
 - Agent client setup: https://github.com/chen09/agent-search-gateway/blob/main/docs/integrations/agent-clients.md
 
