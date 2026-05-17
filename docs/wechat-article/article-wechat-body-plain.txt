@@ -1,4 +1,4 @@
-我给自己的 AI Agent 搭了一个自托管检索网关
+给自己的 AI Agent 搭了一个自托管检索网关
 
 项目仓库：GitHub chen09 / agent-search-gateway
 

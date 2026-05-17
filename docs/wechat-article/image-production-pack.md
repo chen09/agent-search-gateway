@@ -57,15 +57,16 @@ Theme: building a self-hosted retrieval gateway for personal AI agents.
 Canvas: 16:9 landscape, warm white background, premium SaaS architecture style, crisp vector illustration, high readability.
 
 Main title in Chinese:
-“我给自己的 AI Agent 搭了一个自托管检索网关”
+“给自己的 AI Agent 搭了一个自托管检索网关”
 
 Subtitle:
 “SearXNG + Docker + MCP 跑通真实调用”
 
 Composition:
-Left side: several AI agents labeled Cursor, Codex, Claude, OpenClaw, Hermes all pointing to a small warning card labeled “Tavily 免费额度”.
+Left side: several AI agents labeled Cursor, Codex, Claude, OpenClaw, Hermes.
+Above them: a small problem card labeled “每个 Agent 都要查资料”.
 Center: a strong gateway block labeled “Agent Search Gateway”.
-Right side: provider blocks labeled SearXNG, Tavily fallback, Brave optional, Jina Reader.
+Right side: provider blocks labeled SearXNG 默认, Tavily 兜底, Brave 可选, Jina Reader.
 Bottom: deployment strip labeled Code → Docker → GitHub Actions → Docker Hub → Ubuntu Docker → Nginx → HTTPS → MCP.
 
 Style:
@@ -86,38 +87,48 @@ fig-01-human-search-vs-agent-retrieval.png
 
 Caption:
 
-> 图 1：人类搜索看的是页面体验；agent 检索需要稳定结构、可抽取正文、可观测链路和错误处理。
+> 图 1：Google 更像人的搜索入口，Perplexity 更像答案引擎，Tavily 这类服务更接近 agent 的检索工具层。
 
 Prompt:
 
 ```text
-Create a Chinese comparison infographic for a WeChat technical article.
+Create a Chinese positioning infographic for a WeChat technical article.
 
 Title:
-“人用搜索 ≠ Agent 用检索”
+“Google、Perplexity、Tavily 解决的不是同一个问题”
 
 Canvas: 16:9 landscape, warm white background, clean vector style, mobile-readable.
 
-Two-column comparison:
+Three clear columns plus one gateway layer:
 
-Left column title: “人类搜索”
-Visuals: browser search box, blue links, human reading pages, clicking links.
+Column 1 title: “Google”
+Subtitle: “人的搜索入口”
+Visuals: search box, web results, human reading pages.
 Short labels:
 搜索框
-网页阅读
 人工判断
-反复改关键词
+网页结果
 
-Right column title: “Agent 检索”
-Visuals: API gateway, JSON card, URL list, extracted content block, provider_chain, errors.
+Column 2 title: “Perplexity”
+Subtitle: “答案引擎”
+Visuals: question bubble, synthesized answer, citation marks.
 Short labels:
-稳定 API
-JSON 结果
-正文抽取
-可观测
-可重试
+直接问答
+引用
+人来阅读
 
-Middle: bold separator “不是一回事”.
+Column 3 title: “Tavily 类工具”
+Subtitle: “Agent 检索工具层”
+Visuals: API card, URL list, extracted content block, relevance score.
+Short labels:
+Search
+Extract
+Crawl
+结构化结果
+
+Bottom layer:
+“Agent Search Gateway”
+Show it collecting SearXNG, Tavily 兜底, Brave 可选 into one controlled route.
 
 Style:
 Professional SaaS infographic, clear hierarchy, no paragraphs, no tiny text, no fake brand logos.
@@ -133,7 +144,7 @@ fig-02-provider-gateway-map.png
 
 Caption:
 
-> 图 2：目标不是替换某一个厂商，而是把自托管和 hosted providers 收拢到一个统一入口。
+> 图 2：Cursor、Codex、Claude、OpenClaw、Hermes 通过 MCP 接入同一个公网 API；服务器侧再统一路由到 SearXNG、Tavily 兜底和其他 provider。
 
 Prompt:
 
@@ -141,34 +152,46 @@ Prompt:
 Create a Chinese architecture infographic.
 
 Title:
-“从单一 Tavily 依赖到 Provider Gateway”
+“Agent Search Gateway 整体链路”
 
 Canvas: 16:9 landscape, warm white background, modern SaaS architecture diagram.
 
 Left side:
-A narrow funnel labeled “单一 hosted provider”.
-Show Tavily with a quota warning icon labeled “额度压力”.
+Agent clients labeled Cursor, Codex, Claude, OpenClaw, Hermes.
+Small labels under clients: “User Rule / Skill” and “MCP tools”.
+
+Center:
+HTTPS API block labeled “api.agentsearchgateway.com”.
+Below it: Docker server block labeled “Ubuntu + Docker Compose”.
+Inside server show:
+retrieval-api
+SearXNG
+Valkey
 
 Right side:
-A wide gateway architecture.
-Top: agents labeled Cursor, Codex, Claude, OpenClaw, Hermes.
-Middle: large block “Agent Search Gateway”.
-Inside gateway show:
+Provider row:
+SearXNG 默认
+Tavily 兜底
+Brave 可选
+Jina Reader 可选
+Crawl4AI / Firecrawl 未来
+
+Inside retrieval-api show:
 Provider Router
 Extraction
-Rerank
 Cache
 Fallback
+Quota Guard
 
-Bottom provider row:
-SearXNG 默认
-Tavily 保底
-Brave 预留
-Jina Reader 可选
-Crawl4AI 未来
+Show returned response fields:
+provider_chain
+results
+errors
 
-Use arrows from agents to gateway to providers.
-Highlight “SearXNG 默认” in green and “Tavily 保底” in amber.
+Use arrows:
+Agents → MCP → HTTPS API → retrieval-api → Provider Router → Providers → unified JSON response.
+
+Highlight “SearXNG 默认” in green and “Tavily 兜底” in amber.
 No long text.
 ```
 
@@ -190,7 +213,7 @@ Prompt:
 Create a detailed but readable Chinese system architecture diagram.
 
 Title:
-“Agent Search Gateway 架构”
+“Agent Search Gateway 内部架构”
 
 Canvas: 16:9 landscape, clean vector, white background, technical but friendly.
 
@@ -446,4 +469,51 @@ Style:
 Optimistic, credible, engineering-focused.
 No over-the-top hype.
 Keep labels short and large.
+```
+
+## Figure 9: Production Hardening Roadmap
+
+Filename:
+
+```text
+fig-09-production-hardening-roadmap.png
+```
+
+Caption:
+
+> 图 9：现在已经跑通完整闭环；下一阶段要补的是安全、限流、缓存、观测和 provider 健康治理。
+
+Prompt:
+
+```text
+Create a Chinese production hardening roadmap infographic for a WeChat technical article.
+
+Title:
+“从 MVP 到生产级 Gateway”
+
+Canvas: 16:9 landscape, warm white background, clean engineering roadmap style.
+
+Show the current baseline on the left:
+“已跑通”
+Python API
+Docker Compose
+Docker Hub
+Nginx + HTTPS
+MCP
+Cursor 自动调用
+
+Show five improvement lanes moving to the right:
+安全: SSRF 防护, request size limit
+限流: per-client rate limit, quota guard
+稳定性: timeout budget, circuit breaker, healthcheck
+缓存: Valkey 持久缓存, content cache
+观测: provider_chain, errors, 脱敏日志
+
+Right endpoint:
+“更可靠的 Agent 检索基础设施”
+
+Style:
+Readable, practical, no hype.
+Use green for completed baseline, amber for next work, blue for stable target.
+No tiny text.
 ```

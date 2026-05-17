@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>我给自己的 AI Agent 搭了一个自托管检索网关（无图片占位版）</title>
+  <title>给自己的 AI Agent 搭了一个自托管检索网关（无图片占位版）</title>
 </head>
 <body style="margin: 0; background: #f8fafc; color: #263244;">
   <div style="max-width: 760px; margin: 0 auto; padding: 24px 18px 48px;">
@@ -11,7 +11,7 @@
       预览版：图片以占位块显示。生成图片后再替换到公众号正文中。
     </div>
     <article id="wechat-article" style="box-sizing: border-box; max-width: 680px; margin: 0 auto; padding: 0; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;">
-<h1 style="margin: 0 0 18px; line-height: 1.25; font-size: 30px; font-weight: 800; color: #0f172a;">我给自己的 AI Agent 搭了一个自托管检索网关</h1>
+<h1 style="margin: 0 0 18px; line-height: 1.25; font-size: 30px; font-weight: 800; color: #0f172a;">给自己的 AI Agent 搭了一个自托管检索网关</h1>
 <section style="margin: 30px 0 18px; padding: 22px 18px; border: 1px dashed #93c5fd; border-radius: 8px; background: #eff6ff; color: #1e3a8a; text-align: center; line-height: 1.8; font-size: 15px;">
 <strong style="display: block; margin: 0 0 6px; color: #1d4ed8; font-weight: 800;">图片待补</strong>
 <span>头图：给 AI Agent 用的自托管检索网关</span>
@@ -43,15 +43,42 @@
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">项目仓库：</p>
 <p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">GitHub：chen09 / agent-search-gateway</p>
 <p style="margin: 22px 0; padding: 14px 16px; line-height: 1.8; font-size: 16px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 8px;">Docker Hub：chen920 / agent-search-gateway</p>
-<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">为什么不是直接用 Google 或 Perplexity</h2>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">做这个项目之前，我其实也有一个疑问：</p>
+<h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">为什么 Agent 需要专门的检索工具</h2>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这里有一个我之前没想清楚的问题：</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">为什么 agent 需要 Tavily 这种检索 API？直接 Google 搜索不行吗？Perplexity 不也能查资料吗？</strong></p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">调研之后，我的理解变了。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Google、Perplexity、Tavily 解决的是相邻但不同的问题。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Google 更像人的搜索入口。人会看页面、点链接、判断来源、调整关键词。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Perplexity 更像答案引擎。它会把搜索和生成融合起来，直接给人一个带引用的答案。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Tavily、Brave Search API、Firecrawl、Perplexity Search API 这类东西，更接近 agent 的工具层。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">agent 需要的不是一个漂亮搜索框，而是：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">不是 Google、Perplexity 没用，而是它们和 agent 检索工具解决的问题不一样。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">没有这类工具，agent 当然也能干活。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">写本地代码、解释已有文件、根据你贴进来的资料做总结，这些都没问题。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">但一旦任务变成“查一下现在最新是什么”“对比几份官方文档”“抓这个 URL 的正文再分析”“给我带来源的结论”，只靠模型记忆就不够了。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这时 agent 需要的不是一个漂亮搜索框，而是一套可以被程序调用的检索工具。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Google 更像人的搜索入口。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">人会看搜索结果、点开页面、扫正文、判断哪个来源可信，然后不断调整关键词。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Google 也有 Programmable Search / Custom Search JSON API，但它主要还是返回搜索结果和元数据。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">对 agent 来说，这只是第一步。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">后面还要处理正文抽取、噪声过滤、上下文长度、来源保留、失败重试，这些都要自己补。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Perplexity 更像答案引擎。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它适合人直接问问题，然后拿到一个整理过的答案和引用。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">现在 Perplexity 也有 Search API，可以返回 ranked results、domain filtering、multi-query search、content extraction。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这说明“AI search API”这个方向本身是成立的。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">但从自托管 agent 基础设施的角度看，它仍然是一个 hosted provider。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">如果每个 agent 都直接接一个外部 provider，key、额度、成本、日志、失败策略都会散在各个客户端里。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Tavily 这类工具更接近 agent 的工具层。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它不是给人看的搜索页面，而是给程序用的能力组合：search、extract、crawl、rank、filter，把结果整理成 agent 能消费的结构。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这就是它必要的地方。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">有了这样的检索层，agent 就可以把调研拆成几步：</p>
+<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
+<li style="margin: 6px 0;">先搜索候选来源</li>
+<li style="margin: 6px 0;">再抽取干净正文</li>
+<li style="margin: 6px 0;">再比对多个来源</li>
+<li style="margin: 6px 0;">再把结论和 URL 一起返回</li>
+<li style="margin: 6px 0;">失败时换 provider 或重试</li>
+</ul>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">所以我现在的判断是：</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">Tavily 这类工具不是“可有可无的搜索替代品”，而是 agent 想认真做外部调研时需要的工具层。</strong></p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它解决的不是“能不能搜到网页”，而是“agent 能不能稳定、可控、可观测地使用网页信息”。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这也是为什么这个项目最后没有做成一个简单搜索代理，而是做成 gateway。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">agent 检索层至少要考虑：</p>
 <ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
 <li style="margin: 6px 0;">稳定 API</li>
 <li style="margin: 6px 0;">JSON 结果</li>
@@ -63,14 +90,13 @@
 <li style="margin: 6px 0;">可 fallback</li>
 <li style="margin: 6px 0;">可观测</li>
 </ul>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这也是 Tavily 这类工具有价值的原因。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">所以我的结论不是“这些商业检索 API 没用”。恰恰相反，它们证明了这个需求是真实的。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">只是如果每天多个 agent 都要用，额度、成本和可控性就会变成问题。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">商业检索 API 的存在，反而说明这个需求是真实的。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">只是如果每天多个 agent 都要用，额度、成本和可控性就会变成自己的问题。</p>
 <section style="margin: 30px 0 18px; padding: 22px 18px; border: 1px dashed #93c5fd; border-radius: 8px; background: #eff6ff; color: #1e3a8a; text-align: center; line-height: 1.8; font-size: 15px;">
 <strong style="display: block; margin: 0 0 6px; color: #1d4ed8; font-weight: 800;">图片待补</strong>
-<span>图 1：人用搜索和 Agent 用检索不是一回事</span>
+<span>图 1：Google、Perplexity 和 Tavily 在检索链路里的位置</span>
 </section>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 1：人类搜索看的是页面体验；agent 检索需要稳定结构、可抽取正文、可观测链路和错误处理。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 1：Google 更像人的搜索入口，Perplexity 更像答案引擎，Tavily 这类服务更接近 agent 的检索工具层。</p>
 <h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">竞品调研之后，目标变成了 Gateway</h2>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">我看了几个方向。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Tavily 很适合 AI agent。官方文档里，它有 Search、Extract、Map、Crawl，并且是 credit-based 计费。免费额度可以开始用，但不是无限用。</p>
@@ -90,9 +116,9 @@
 </ul>
 <section style="margin: 30px 0 18px; padding: 22px 18px; border: 1px dashed #93c5fd; border-radius: 8px; background: #eff6ff; color: #1e3a8a; text-align: center; line-height: 1.8; font-size: 15px;">
 <strong style="display: block; margin: 0 0 6px; color: #1d4ed8; font-weight: 800;">图片待补</strong>
-<span>图 2：从单一 Tavily 依赖到 Provider Gateway</span>
+<span>图 2：Agent Search Gateway 的整体链路</span>
 </section>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 2：目标不是替换某一个厂商，而是把自托管和 hosted providers 收拢到一个统一入口。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 2：Cursor、Codex、Claude、OpenClaw、Hermes 通过 MCP 接入同一个公网 API；服务器侧再统一路由到 SearXNG、Tavily 兜底和其他 provider。</p>
 <h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">这个 Gateway 到底做什么</h2>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">现在的 Agent Search Gateway 提供一个统一 API：</p>
 <pre style="box-sizing: border-box; margin: 20px 0; padding: 14px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #e5e7eb; border-radius: 8px; font-size: 13px; line-height: 1.75; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
@@ -120,7 +146,7 @@ errors</code>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这比“给我几个搜索结果”更适合工程化。</p>
 <section style="margin: 30px 0 18px; padding: 22px 18px; border: 1px dashed #93c5fd; border-radius: 8px; background: #eff6ff; color: #1e3a8a; text-align: center; line-height: 1.8; font-size: 15px;">
 <strong style="display: block; margin: 0 0 6px; color: #1d4ed8; font-weight: 800;">图片待补</strong>
-<span>图 3：Agent Search Gateway 架构图</span>
+<span>图 3：Agent Search Gateway 内部架构图</span>
 </section>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 3：agent 只面对一个 gateway；gateway 负责 provider routing、正文抽取、缓存、rerank 和 fallback。</p>
 <h2 style="margin: 42px 0 16px; padding-left: 12px; border-left: 5px solid #2563eb; line-height: 1.35; font-size: 22px; font-weight: 800; color: #102a43;">技术栈：小而完整</h2>
@@ -303,6 +329,11 @@ errors: []</code>
 <li style="margin: 6px 0;">更完整的 CI 测试</li>
 <li style="margin: 6px 0;">root domain 的文档站或状态页</li>
 </ul>
+<section style="margin: 30px 0 18px; padding: 22px 18px; border: 1px dashed #93c5fd; border-radius: 8px; background: #eff6ff; color: #1e3a8a; text-align: center; line-height: 1.8; font-size: 15px;">
+<strong style="display: block; margin: 0 0 6px; color: #1d4ed8; font-weight: 800;">图片待补</strong>
+<span>图 9：从 MVP 到生产级 Gateway 的优化路线</span>
+</section>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">图 9：现在已经跑通完整闭环；下一阶段要补的是安全、限流、缓存、观测和 provider 健康治理。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">但这不影响它当前的价值。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它已经证明了一件事：</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">一个自托管、开源优先、可 fallback 的 agent search gateway，是完全可行的。</strong></p>
@@ -332,6 +363,9 @@ errors: []</code>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">微信正文里不贴外链。资料来源可以按下面这些名称搜索：</p>
 <ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
 <li style="margin: 6px 0;">Tavily Credits &amp; Pricing</li>
+<li style="margin: 6px 0;">Tavily API Reference</li>
+<li style="margin: 6px 0;">Tavily FAQ</li>
+<li style="margin: 6px 0;">Google Custom Search JSON API</li>
 <li style="margin: 6px 0;">Brave Search API</li>
 <li style="margin: 6px 0;">Firecrawl Billing</li>
 <li style="margin: 6px 0;">Perplexity Search API</li>
