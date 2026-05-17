@@ -147,6 +147,8 @@ docker.io/chen920/agent-search-gateway:latest
 
 Users still provide their own `.env`; the image does not contain API keys or provider credentials. See [docs/DOCKER_HUB.md](docs/DOCKER_HUB.md) for publishing and image-based deployment details.
 
+If users only copy `.env.example` without generating `SEARXNG_SECRET` and `RETRIEVAL_API_KEY`, the stack may start but will use public placeholder secrets. That is only acceptable for a quick local test.
+
 ## Agent Client Integration
 
 For Cursor, Codex, Claude, OpenClaw, Hermes, and similar agents, use the MCP server as the primary integration point. The MCP server runs on the host and calls the gateway at `http://127.0.0.1:8010`; it does not call SearXNG directly.

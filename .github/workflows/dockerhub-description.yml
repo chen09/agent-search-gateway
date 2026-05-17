@@ -1,0 +1,41 @@
+name: Docker Hub Description
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - docs/DOCKER_HUB_OVERVIEW.md
+      - .github/workflows/dockerhub-description.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+jobs:
+  update:
+    name: Update Docker Hub overview
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check Docker Hub secrets
+        if: ${{ env.DOCKERHUB_USERNAME == '' || env.DOCKERHUB_TOKEN == '' }}
+        run: |
+          echo "::notice::Skipping Docker Hub description update because DOCKERHUB_USERNAME or DOCKERHUB_TOKEN is missing."
+
+      - name: Update Docker Hub description
+        if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
+          repository: chen920/agent-search-gateway
+          short-description: Self-hosted search and extraction gateway for AI agents
+          readme-filepath: ./docs/DOCKER_HUB_OVERVIEW.md

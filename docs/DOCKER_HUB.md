@@ -49,6 +49,28 @@ chen920/agent-search-gateway:latest
 
 You can also run the `Docker Image` workflow manually from GitHub Actions and provide an `image_tag`, for example `dev`.
 
+## Docker Hub Overview
+
+The public Docker Hub page should also explain `.env` setup because many users discover the image there before reading GitHub.
+
+The source file for Docker Hub's long overview is:
+
+```text
+docs/DOCKER_HUB_OVERVIEW.md
+```
+
+It is synchronized by:
+
+```text
+.github/workflows/dockerhub-description.yml
+```
+
+The short Docker Hub description is:
+
+```text
+Self-hosted search and extraction gateway for AI agents
+```
+
 ## User Setup With Prebuilt Image
 
 Users still need their own `.env`. The image does not contain API keys.
