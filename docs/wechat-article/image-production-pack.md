@@ -45,22 +45,22 @@ fig-00-hero-agent-search-gateway.png
 
 Caption:
 
-> 头图：从 Tavily 额度焦虑到自托管 Agent Search Gateway。
+> 头图：给 AI Agent 用的自托管检索网关。
 
 Prompt:
 
 ```text
 Create a polished Chinese hero image for a WeChat technical article.
 
-Theme: from Tavily quota pressure to a self-hosted Agent Search Gateway.
+Theme: building a self-hosted retrieval gateway for personal AI agents.
 
 Canvas: 16:9 landscape, warm white background, premium SaaS architecture style, crisp vector illustration, high readability.
 
 Main title in Chinese:
-“一天做了一个自托管 Agent Search Gateway”
+“我给自己的 AI Agent 搭了一个自托管检索网关”
 
 Subtitle:
-“从 Tavily 额度焦虑到全栈上线”
+“SearXNG + Docker + MCP 跑通真实调用”
 
 Composition:
 Left side: several AI agents labeled Cursor, Codex, Claude, OpenClaw, Hermes all pointing to a small warning card labeled “Tavily 免费额度”.

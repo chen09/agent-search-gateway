@@ -8,18 +8,18 @@
 <body style="margin: 0; padding: 24px 18px 48px; background: #ffffff; color: #263244;">
   <article id="wechat-article" style="box-sizing: border-box; max-width: 680px; margin: 0 auto; padding: 0; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;">
 <figure style="margin: 30px 0 18px; padding: 0;">
-<img src="./images/fig-00-hero-agent-search-gateway.png" alt="头图：从 Tavily 额度焦虑到自托管 Agent Search Gateway" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
+<img src="./images/fig-00-hero-agent-search-gateway.png" alt="头图：给 AI Agent 用的自托管检索网关" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
 </figure>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这篇文章记录一个很具体的工程实践。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">起因不是一个宏大的产品规划，而是一个很朴素的问题：</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;"><strong style="font-weight: 700; color: #111827;">Cursor、Codex、Claude、OpenClaw、Hermes 这些 agent 都要查资料。如果全都用 Tavily，免费额度很快就不够。</strong></p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">一开始我想做的是：能不能做一个 Tavily 的 free 代替品。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">做着做着，目标变清楚了：这不应该只是一个替代品，而应该是一个 gateway。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">也就是：给所有 agent 一个统一的检索入口。底层可以先走自托管 SearXNG，也可以接 Tavily 做保底，将来还可以接 Brave、Firecrawl、Crawl4AI 或其他检索/抽取后端。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">最后这个项目从空仓库开始，在一天内跑通了一个完整闭环。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这里的重点不是“写了一个搜索接口”。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">而是从程序、容器、CI/CD、镜像发布、云服务器、域名、HTTPS，到 MCP 和 Cursor Rules，全链路都打通了。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">也就是说，它已经不是一个本地 demo，而是一个可以被真实 agent 使用的自托管检索基础设施。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这篇不是产品发布，也不是教程合集。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">起因很简单：最近我让 Cursor、Codex、Claude、OpenClaw、Hermes 这些 agent 查资料，发现如果都走 Tavily，免费额度很快就不够用。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">一开始我只是想找一个便宜一点、最好能自托管的替代方案。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">但做着做着，目标变清楚了：我真正需要的不是一个 Tavily clone，而是一个统一的检索网关。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">它要做的事情也很朴素：给所有 agent 一个统一入口。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">默认先走自托管 SearXNG，必要时再 fallback 到 Tavily。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">将来如果要接 Brave、Firecrawl、Crawl4AI 或其他后端，也都收在同一个 gateway 后面。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这次最后跑通的也不是一个玩具搜索接口。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">而是一条完整链路：程序、Docker、CI/CD、Docker Hub、云服务器、域名、HTTPS、MCP、Cursor Rules。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">到这一步，它才算从一个本地脚本，变成了能被真实 agent 调用的自托管检索基础设施。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这条链路包括：</p>
 <ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
 <li style="margin: 6px 0;">Python API</li>
