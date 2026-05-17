@@ -102,6 +102,30 @@ Server-side provider keys は gateway の `.env` に置き、agent の MCP confi
 
 Agent MCP config に必要なのは `AGENT_SEARCH_GATEWAY_URL`、`AGENT_SEARCH_GATEWAY_API_KEY`、任意の `AGENT_SEARCH_GATEWAY_TIMEOUT` だけです。
 
+`AGENT_SEARCH_GATEWAY_API_KEY` には、gateway `.env` の `RETRIEVAL_API_KEY` の値を使います。
+
+Local Docker Compose：
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+Remote Ubuntu server：
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+Gateway API key を rotation する場合は、`.env` を更新し、API container を再起動してから、すべての MCP client config の key を新しい値に更新してください。
+
+```bash
+NEW_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{NEW_KEY}/m' .env
+docker compose up -d retrieval-api
+```
+
 `cp .env.example .env` だけで `SEARXNG_SECRET` と `RETRIEVAL_API_KEY` を生成しない場合でも、stack は起動する可能性があります。ただし公開テンプレート secret を使うため、短時間のローカルテスト以外には使わないでください。
 
 Tavily を hosted fallback または互換 provider として明示的に使いたい場合は `.env` を編集します。

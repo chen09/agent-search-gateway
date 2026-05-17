@@ -147,6 +147,22 @@ AGENT_SEARCH_GATEWAY_API_KEY=<your-gateway-api-key>
 AGENT_SEARCH_GATEWAY_TIMEOUT=90
 ```
 
+`AGENT_SEARCH_GATEWAY_API_KEY` is the same secret as `RETRIEVAL_API_KEY` in the gateway `.env`.
+
+For a local gateway:
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+For a remote Ubuntu server:
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
 If your MCP client config is private and never committed or synced, the same values can be written directly into the client's MCP `env` block.
 
 These are MCP process environment variables, not values that normally need to be written into the gateway `.env`.

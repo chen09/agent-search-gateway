@@ -124,6 +124,32 @@ Env:
 
 The env file should contain `AGENT_SEARCH_GATEWAY_URL` and either `AGENT_SEARCH_GATEWAY_API_KEY` for a remote gateway or `RETRIEVAL_API_KEY` for a local gateway.
 
+`AGENT_SEARCH_GATEWAY_API_KEY` is the value of `RETRIEVAL_API_KEY` from the gateway `.env`.
+
+For local Docker Compose:
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+For a remote Ubuntu server:
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+To rotate it:
+
+```bash
+NEW_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{NEW_KEY}/m' .env
+docker compose up -d retrieval-api
+```
+
+After rotating, update every MCP client config that uses the old key.
+
 MCP tools:
 
 - `agent_gateway_health`
@@ -254,6 +280,32 @@ Env:
 
 这个 env 文件里应包含 `AGENT_SEARCH_GATEWAY_URL`，以及远程网关使用的 `AGENT_SEARCH_GATEWAY_API_KEY`，或本地网关使用的 `RETRIEVAL_API_KEY`。
 
+`AGENT_SEARCH_GATEWAY_API_KEY` 的值，就是网关 `.env` 里的 `RETRIEVAL_API_KEY`。
+
+本地 Docker Compose：
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+远程 Ubuntu server：
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+轮换 key：
+
+```bash
+NEW_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{NEW_KEY}/m' .env
+docker compose up -d retrieval-api
+```
+
+轮换后，需要更新所有仍在使用旧 key 的 MCP client config。
+
 MCP tools：
 
 - `agent_gateway_health`
@@ -383,6 +435,32 @@ Env:
 ```
 
 この env file には `AGENT_SEARCH_GATEWAY_URL` と、remote gateway 用の `AGENT_SEARCH_GATEWAY_API_KEY` または local gateway 用の `RETRIEVAL_API_KEY` を入れてください。
+
+`AGENT_SEARCH_GATEWAY_API_KEY` には、gateway `.env` の `RETRIEVAL_API_KEY` の値を使います。
+
+Local Docker Compose：
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+Remote Ubuntu server：
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+Key rotation：
+
+```bash
+NEW_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{NEW_KEY}/m' .env
+docker compose up -d retrieval-api
+```
+
+Rotation 後、古い key を使っているすべての MCP client config を更新してください。
 
 MCP tools：
 

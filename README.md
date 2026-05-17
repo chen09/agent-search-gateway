@@ -102,6 +102,30 @@ Server-side provider keys belong in the gateway `.env`, not in agent MCP configs
 
 Agent MCP configs should only contain `AGENT_SEARCH_GATEWAY_URL`, `AGENT_SEARCH_GATEWAY_API_KEY`, and optional `AGENT_SEARCH_GATEWAY_TIMEOUT`.
 
+To get `AGENT_SEARCH_GATEWAY_API_KEY`, use the value of `RETRIEVAL_API_KEY` from the gateway `.env`.
+
+Local Docker Compose:
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+Remote Ubuntu server:
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+To rotate the gateway API key, update `.env`, restart the API container, then update every MCP client config with the new value:
+
+```bash
+NEW_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{NEW_KEY}/m' .env
+docker compose up -d retrieval-api
+```
+
 If you want Tavily as an explicit hosted fallback or compatibility provider, edit `.env`:
 
 ```dotenv

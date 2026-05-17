@@ -71,6 +71,32 @@ If your MCP config is private and never committed or synced, it is also valid to
 }
 ```
 
+`AGENT_SEARCH_GATEWAY_API_KEY` is the value of `RETRIEVAL_API_KEY` from the gateway `.env`.
+
+Local Docker Compose:
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+Remote Ubuntu server:
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+To rotate the gateway API key:
+
+```bash
+NEW_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{NEW_KEY}/m' .env
+docker compose up -d retrieval-api
+```
+
+After rotating, update every MCP client config that still uses the old key.
+
 ## 3. Recommended MCP: uvx From GitHub
 
 Use this shape for clients that accept an `mcpServers` JSON object, including many Cursor and Claude-compatible configurations:

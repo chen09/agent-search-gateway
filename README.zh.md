@@ -102,6 +102,30 @@ RERANKER_ENABLED=false
 
 Agent MCP config 里只需要 `AGENT_SEARCH_GATEWAY_URL`、`AGENT_SEARCH_GATEWAY_API_KEY`，以及可选的 `AGENT_SEARCH_GATEWAY_TIMEOUT`。
 
+`AGENT_SEARCH_GATEWAY_API_KEY` 的值，就是网关 `.env` 里的 `RETRIEVAL_API_KEY`。
+
+本地 Docker Compose：
+
+```bash
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+远程 Ubuntu server：
+
+```bash
+ssh ubuntu@your-server
+cd ~/agent-search-gateway
+grep '^RETRIEVAL_API_KEY=' .env | cut -d= -f2-
+```
+
+如果要轮换 gateway API key，更新 `.env`，重启 API 容器，然后把所有 MCP client config 里的 key 一起改掉：
+
+```bash
+NEW_KEY="$(openssl rand -hex 32)" \
+  perl -0pi -e 's/^RETRIEVAL_API_KEY=.*/RETRIEVAL_API_KEY=$ENV{NEW_KEY}/m' .env
+docker compose up -d retrieval-api
+```
+
 如果只执行 `cp .env.example .env` 但不生成 `SEARXNG_SECRET` 和 `RETRIEVAL_API_KEY`，服务可能也能启动，但会使用公开模板 secret。这只适合快速本机试用，不适合长期运行或对外暴露。
 
 如果你明确想用 Tavily 作为 hosted fallback 或兼容 provider，编辑 `.env`：
