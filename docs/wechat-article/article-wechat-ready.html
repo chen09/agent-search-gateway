@@ -137,7 +137,7 @@ errors</code>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">正文抽取用 trafilatura。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">缓存先用进程内 TTL cache。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">Valkey 已经在 Docker Compose 里，后面可以升级成共享缓存。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">reranker 支持 sentence-transformers CrossEncoder，但默认关闭。原因很现实：它会拉 PyTorch。我的机器是 Mac mini，基础服务不应该一上来就强依赖 PyTorch。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">reranker 做成可选能力，默认不影响基础部署。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">部署用 Docker Compose。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">发布用 GitHub Actions 自动推 Docker Hub。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">公网服务用 Ubuntu server + Docker + Nginx + Let’s Encrypt。</p>
@@ -271,30 +271,9 @@ errors: []</code>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这个项目从空仓库到公网可用，只用了大约一天。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">代码、Docker、CI/CD、Docker Hub、域名、Nginx、HTTPS、MCP、Cursor Rule、文档，基本都是通过 AI 完成的。</p>
 <p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这次主要是 Codex，GPT-5.5，单 agent 贯穿到底。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">我觉得这点值得单独说一下。</p>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这不是“让 AI 写几行代码”的感觉，而是另一种工作方式：</p>
-<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
-<li style="margin: 6px 0;">我负责判断方向</li>
-<li style="margin: 6px 0;">AI 负责快速实现</li>
-<li style="margin: 6px 0;">我负责确认边界</li>
-<li style="margin: 6px 0;">AI 负责补文档、跑验证、修配置</li>
-<li style="margin: 6px 0;">我再做产品判断和路线收口</li>
-</ul>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">整个过程中真正重要的不是“无脑让 AI 写”，而是持续做工程判断：</p>
-<ul style="margin: 16px 0 20px; padding-left: 22px; color: #263244; line-height: 1.9; font-size: 16px;">
-<li style="margin: 6px 0;">不做 Tavily clone，做 gateway</li>
-<li style="margin: 6px 0;">Brave 不默认启用</li>
-<li style="margin: 6px 0;">PyTorch 不进基础依赖</li>
-<li style="margin: 6px 0;">provider key 不给 agent</li>
-<li style="margin: 6px 0;">API host 用 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">api.agentsearchgateway.com</code></li>
-<li style="margin: 6px 0;">root domain 留给人类页面</li>
-<li style="margin: 6px 0;">Cursor User Rule 不放 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">.cursor/rules</code> 作为对外入口</li>
-<li style="margin: 6px 0;">Docker image 要公开发布</li>
-<li style="margin: 6px 0;">README 和 Docker Hub 都要中日英三语</li>
-<li style="margin: 6px 0;">MCP 要能用 <code style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #f3f4f6; color: #0f172a; border-radius: 4px; padding: 1px 5px; font-size: 0.92em;">uvx</code> 从 GitHub 直接启动</li>
-<li style="margin: 6px 0;">Cursor Rules 要能从 GitHub import，并且真的触发工具调用</li>
-</ul>
-<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这些判断如果错了，代码写得再快也没意义。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">这件事值得记录，是因为一天内完成的不是某个孤立功能，而是从想法到可用服务的完整交付链路。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">写代码只是其中一部分。</p>
+<p style="margin: 18px 0; line-height: 1.95; font-size: 16px; color: #263244;">服务能不能跑，镜像能不能发，域名和 HTTPS 能不能通，MCP 能不能接上，Cursor 是否真的会调用，这些都被验证之后，它才从“代码仓库”变成了“可以被 agent 使用的检索基础设施”。</p>
 <figure style="margin: 30px 0 18px; padding: 0;">
 <img src="./images/fig-08-one-day-vibe-coding-roadmap.png" alt="图 8：一天完成的 Vibe Coding 全栈路线" style="display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);" />
 </figure>
