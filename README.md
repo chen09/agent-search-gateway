@@ -347,4 +347,6 @@ Recommended next optimizations:
 
 ## License
 
-No license is declared yet. Treat this repository as private/internal tooling until a license is chosen.
+Agent Search Gateway is licensed under the [Apache License 2.0](LICENSE).
+
+Third-party components keep their own upstream licenses. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

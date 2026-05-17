@@ -347,4 +347,6 @@ RERANKER_DEVICE=mps
 
 ## License
 
-当前还未声明 license。在选择 license 前，请将本仓库视为 private/internal tooling。
+Agent Search Gateway 使用 [Apache License 2.0](LICENSE)。
+
+第三方组件保留各自 upstream license。见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

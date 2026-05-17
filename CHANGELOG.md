@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added Apache License 2.0 project licensing and third-party notices.
+
 ## 0.2.1 - 2026-05-17
 
 - Added Docker Hub publishing workflow for the retrieval API image.

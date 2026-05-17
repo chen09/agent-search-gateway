@@ -142,7 +142,9 @@ Do not commit:
 
 ### License
 
-No license is declared yet. Review the repository before redistribution or production use.
+Agent Search Gateway is licensed under the Apache License 2.0.
+
+Third-party components keep their own upstream licenses. See the GitHub repository's `THIRD_PARTY_NOTICES.md`.
 
 ## 中文
 
@@ -269,7 +271,9 @@ MCP tools：
 
 ### License
 
-当前还没有声明 license。重新分发或生产使用前，请先检查 GitHub 仓库。
+Agent Search Gateway 使用 Apache License 2.0。
+
+第三方组件保留各自 upstream license。请查看 GitHub 仓库里的 `THIRD_PARTY_NOTICES.md`。
 
 ## 日本語
 
@@ -396,4 +400,6 @@ Commit しないでください：
 
 ### License
 
-まだ license は宣言されていません。再配布または production use の前に GitHub repository を確認してください。
+Agent Search Gateway は Apache License 2.0 で提供されます。
+
+Third-party components はそれぞれの upstream license に従います。GitHub repository の `THIRD_PARTY_NOTICES.md` を参照してください。

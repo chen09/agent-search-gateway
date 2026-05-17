@@ -347,4 +347,6 @@ Concurrency が増えたときの主な bottleneck：
 
 ## License
 
-まだ license は宣言していません。license を選ぶまでは、この repository を private/internal tooling として扱ってください。
+Agent Search Gateway は [Apache License 2.0](LICENSE) で提供されます。
+
+Third-party components はそれぞれの upstream license に従います。詳細は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
