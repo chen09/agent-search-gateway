@@ -89,6 +89,19 @@ RERANKER_ENABLED=false
 
 完整 `.env` 说明见 [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)，里面有 Docker Compose、本机 Python 开发、MCP 客户端、hosted provider keys、Jina Reader、可选 reranker 的示例。
 
+服务器侧 provider key 放在网关 `.env`，不要放进 agent 的 MCP config：
+
+| Key | 什么时候设置 |
+|---|---|
+| `RETRIEVAL_API_KEY` | 非本地访问时必填。Agent 侧通过 `AGENT_SEARCH_GATEWAY_API_KEY` 使用它。 |
+| `TAVILY_API_KEY` | 只有在 `TAVILY_ENABLED=true` 并且设置了本地 credit limit 时才填写。 |
+| `BRAVE_API_KEY` | 预留给未来 Brave provider。现在保持 `BRAVE_ENABLED=false`。 |
+| `JINA_API_KEY` | 只有使用 hosted Jina Reader 时才填写，例如 `JINA_READER_BASE_URL=https://r.jina.ai`。自托管 Jina Reader 和本地 trafilatura 不需要它。 |
+| `MINIMAX_API_KEY` | 未来原生 summarization provider；当前网关还不会直接调用。 |
+| `DEEPSEEK_API_KEY` | 未来原生 summarization provider；当前网关还不会直接调用。 |
+
+Agent MCP config 里只需要 `AGENT_SEARCH_GATEWAY_URL`、`AGENT_SEARCH_GATEWAY_API_KEY`，以及可选的 `AGENT_SEARCH_GATEWAY_TIMEOUT`。
+
 如果只执行 `cp .env.example .env` 但不生成 `SEARXNG_SECRET` 和 `RETRIEVAL_API_KEY`，服务可能也能启动，但会使用公开模板 secret。这只适合快速本机试用，不适合长期运行或对外暴露。
 
 如果你明确想用 Tavily 作为 hosted fallback 或兼容 provider，编辑 `.env`：

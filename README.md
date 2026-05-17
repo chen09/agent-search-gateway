@@ -89,6 +89,19 @@ RERANKER_ENABLED=false
 
 See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) for complete `.env` examples for Docker Compose, host Python development, MCP clients, hosted provider keys, Jina Reader, and optional reranking.
 
+Server-side provider keys belong in the gateway `.env`, not in agent MCP configs:
+
+| Key | When to set it |
+|---|---|
+| `RETRIEVAL_API_KEY` | Required for any non-local gateway access. Agents use this through `AGENT_SEARCH_GATEWAY_API_KEY`. |
+| `TAVILY_API_KEY` | Only when `TAVILY_ENABLED=true` and a local credit limit is configured. |
+| `BRAVE_API_KEY` | Reserved for future Brave provider support. Keep `BRAVE_ENABLED=false` for now. |
+| `JINA_API_KEY` | Only when using hosted Jina Reader, for example `JINA_READER_BASE_URL=https://r.jina.ai`. Self-hosted Jina Reader and local trafilatura do not need it. |
+| `MINIMAX_API_KEY` | Future native summarization provider; not called directly by the current gateway. |
+| `DEEPSEEK_API_KEY` | Future native summarization provider; not called directly by the current gateway. |
+
+Agent MCP configs should only contain `AGENT_SEARCH_GATEWAY_URL`, `AGENT_SEARCH_GATEWAY_API_KEY`, and optional `AGENT_SEARCH_GATEWAY_TIMEOUT`.
+
 If you want Tavily as an explicit hosted fallback or compatibility provider, edit `.env`:
 
 ```dotenv

@@ -89,6 +89,19 @@ RERANKER_ENABLED=false
 
 Docker Compose、host Python development、MCP clients、hosted provider keys、Jina Reader、任意 reranking の完全な `.env` 例は [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) を参照してください。
 
+Server-side provider keys は gateway の `.env` に置き、agent の MCP config には置きません。
+
+| Key | いつ設定するか |
+|---|---|
+| `RETRIEVAL_API_KEY` | 非 local の gateway access では必須。Agent 側では `AGENT_SEARCH_GATEWAY_API_KEY` として使います。 |
+| `TAVILY_API_KEY` | `TAVILY_ENABLED=true` かつ local credit limit を設定した場合だけ使います。 |
+| `BRAVE_API_KEY` | 将来の Brave provider 用です。現時点では `BRAVE_ENABLED=false` のままにしてください。 |
+| `JINA_API_KEY` | Hosted Jina Reader を使う場合だけ設定します。例：`JINA_READER_BASE_URL=https://r.jina.ai`。Self-hosted Jina Reader と local trafilatura には不要です。 |
+| `MINIMAX_API_KEY` | 将来の native summarization provider 用です。現在の gateway は直接呼びません。 |
+| `DEEPSEEK_API_KEY` | 将来の native summarization provider 用です。現在の gateway は直接呼びません。 |
+
+Agent MCP config に必要なのは `AGENT_SEARCH_GATEWAY_URL`、`AGENT_SEARCH_GATEWAY_API_KEY`、任意の `AGENT_SEARCH_GATEWAY_TIMEOUT` だけです。
+
 `cp .env.example .env` だけで `SEARXNG_SECRET` と `RETRIEVAL_API_KEY` を生成しない場合でも、stack は起動する可能性があります。ただし公開テンプレート secret を使うため、短時間のローカルテスト以外には使わないでください。
 
 Tavily を hosted fallback または互換 provider として明示的に使いたい場合は `.env` を編集します。
