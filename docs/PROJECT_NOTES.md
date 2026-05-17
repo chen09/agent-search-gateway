@@ -20,7 +20,7 @@ The repo now supports:
 - Docker Compose stack with retrieval API, SearXNG, and Valkey.
 - Docker Hub image publishing.
 - Python MCP server for Cursor, Codex, Claude, OpenClaw, Hermes, and similar clients.
-- Cursor project rule for encouraging the MCP tools when web/current information is needed.
+- Reusable Cursor User Rule template for encouraging the MCP tools when web/current information is needed.
 - Apache-2.0 license.
 
 ## Release State
@@ -180,13 +180,7 @@ After rotation, every MCP client config that still uses the old gateway key must
 
 MCP gives Cursor callable tools. Cursor rules tell Cursor when to prefer those tools.
 
-Current repo includes:
-
-```text
-.cursor/rules/agent-search-gateway.mdc
-```
-
-That file is the project rule for this repository. For customers importing a reusable rule from GitHub into Cursor User Rules, use:
+Current repo includes a reusable rule for customers importing from GitHub into Cursor User Rules:
 
 ```text
 integrations/cursor/agent-search-gateway-user-rule.mdc
@@ -198,7 +192,7 @@ Raw import/copy URL:
 https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
 ```
 
-Both rules say to use Agent Search Gateway MCP tools for web search, current information, external documentation lookup, and URL extraction. They also say not to use the gateway for local repository search.
+The rule says to use Agent Search Gateway MCP tools for web search, current information, external documentation lookup, and URL extraction. It also says not to use the gateway for local repository search.
 
 Test prompt for Cursor Agent mode:
 
@@ -232,7 +226,7 @@ If Cursor does not call the tools:
 Practical expectation:
 
 - Cursor Agent may automatically call MCP tools when it decides they are relevant.
-- A project rule improves reliability but does not make tool use a hard guarantee.
+- A Cursor User Rule improves reliability but does not make tool use a hard guarantee.
 - Cursor Agent mode is the right place to test MCP tools.
 - Auto-run settings affect whether Cursor asks for confirmation before tool calls.
 
@@ -325,4 +319,4 @@ Highest value next steps:
 - Should the MCP package also be published to PyPI later, or is `uvx --from git+...` enough?
 - Should the Docker image pin SearXNG by version instead of using `latest`?
 - Should API version and package version always move together, or should MCP-only changes have separate package versions?
-- Should Cursor rules be shipped only in `.cursor/rules`, or also mirrored into `AGENTS.md` for other agents?
+- Should the Cursor User Rule also be mirrored into `AGENTS.md` or other agent-specific instruction files?

@@ -241,10 +241,11 @@ mkdir -p ~/.agents/skills
 cp -R skills/agent-search-gateway ~/.agents/skills/
 ```
 
-Cursor 用户有两个 rule 入口：
+Cursor 用户可以使用这个可复用 User Rule 模板：
 
-- `.cursor/rules/agent-search-gateway.mdc`：本仓库自己的 project rule。
-- `integrations/cursor/agent-search-gateway-user-rule.mdc`：给其他项目 import/copy 到 Cursor User Rules 的可复用 rule。
+```text
+integrations/cursor/agent-search-gateway-user-rule.mdc
+```
 
 Cursor、Codex、Claude、OpenClaw、Hermes 的配置步骤见 [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md)。
 

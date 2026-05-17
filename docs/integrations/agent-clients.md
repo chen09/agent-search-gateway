@@ -201,13 +201,7 @@ Use the generic MCP JSON above in Cursor's MCP configuration. Project-local conf
 
 After adding the server, restart or reload Cursor and ask the agent to list available MCP tools. It should see `agent_search` and `agent_extract`.
 
-This repo includes a Cursor project rule for the repository itself:
-
-```text
-.cursor/rules/agent-search-gateway.mdc
-```
-
-For other repositories, use the reusable Cursor User Rule template instead:
+This repo includes a reusable Cursor User Rule template:
 
 ```text
 integrations/cursor/agent-search-gateway-user-rule.mdc

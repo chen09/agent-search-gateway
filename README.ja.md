@@ -241,10 +241,11 @@ mkdir -p ~/.agents/skills
 cp -R skills/agent-search-gateway ~/.agents/skills/
 ```
 
-Cursor users 向けには 2 つの rule surface があります。
+Cursor users 向けには reusable User Rule template を用意しています。
 
-- `.cursor/rules/agent-search-gateway.mdc`：この repo 用の project rule。
-- `integrations/cursor/agent-search-gateway-user-rule.mdc`：他 project の Cursor User Rules に import/copy する再利用用 rule。
+```text
+integrations/cursor/agent-search-gateway-user-rule.mdc
+```
 
 Cursor、Codex、Claude、OpenClaw、Hermes のセットアップ手順は [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md) を参照してください。
 
