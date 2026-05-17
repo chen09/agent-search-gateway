@@ -183,13 +183,19 @@ MCP gives Cursor callable tools. Cursor rules tell Cursor when to prefer those t
 Current repo includes a reusable rule for customers importing from GitHub into Cursor User Rules:
 
 ```text
-integrations/cursor/agent-search-gateway-user-rule.mdc
+rules/agent-search-gateway-user-rule.mdc
 ```
 
-Raw import/copy URL:
+For Cursor User Rules GitHub/GitLab import, use the repository URL:
 
 ```text
-https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+https://github.com/chen09/agent-search-gateway
+```
+
+For manual copy, use the raw file URL:
+
+```text
+https://raw.githubusercontent.com/chen09/agent-search-gateway/main/rules/agent-search-gateway-user-rule.mdc
 ```
 
 The rule says to use Agent Search Gateway MCP tools for web search, current information, external documentation lookup, and URL extraction. It also says not to use the gateway for local repository search.

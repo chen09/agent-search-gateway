@@ -150,10 +150,10 @@ docker compose up -d retrieval-api
 
 After rotating, update every MCP client config that uses the old key.
 
-For Cursor, import or copy the reusable User Rule from GitHub so Cursor knows when to prefer the gateway:
+For Cursor, import the reusable User Rule from GitHub so Cursor knows when to prefer the gateway. In Cursor User Rules GitHub/GitLab import, enter the repository URL, not a `blob` or raw file URL:
 
 ```text
-https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+https://github.com/chen09/agent-search-gateway
 ```
 
 MCP tools:
@@ -312,10 +312,10 @@ docker compose up -d retrieval-api
 
 轮换后，需要更新所有仍在使用旧 key 的 MCP client config。
 
-Cursor 用户可以从 GitHub import/copy 这个可复用 User Rule，让 Cursor 更稳定地选择 gateway：
+Cursor 用户可以从 GitHub import 这个可复用 User Rule，让 Cursor 更稳定地选择 gateway。Cursor User Rules 的 GitHub/GitLab import 里要填仓库 URL，不要填 `blob` 或 raw file URL：
 
 ```text
-https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+https://github.com/chen09/agent-search-gateway
 ```
 
 MCP tools：
@@ -474,10 +474,10 @@ docker compose up -d retrieval-api
 
 Rotation 後、古い key を使っているすべての MCP client config を更新してください。
 
-Cursor users は、この reusable User Rule を GitHub から import/copy できます。Cursor が gateway を選びやすくなります。
+Cursor users は、この reusable User Rule を GitHub から import できます。Cursor が gateway を選びやすくなります。Cursor User Rules の GitHub/GitLab import には repository URL を入力します。`blob` や raw file URL は入力しません。
 
 ```text
-https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+https://github.com/chen09/agent-search-gateway
 ```
 
 MCP tools：

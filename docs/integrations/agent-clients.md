@@ -204,13 +204,19 @@ After adding the server, restart or reload Cursor and ask the agent to list avai
 This repo includes a reusable Cursor User Rule template:
 
 ```text
-integrations/cursor/agent-search-gateway-user-rule.mdc
+rules/agent-search-gateway-user-rule.mdc
 ```
 
-GitHub/raw import URL:
+For Cursor User Rules GitHub/GitLab import, paste the repository URL. Cursor clones repositories during import, so do not paste a `blob` URL or raw file URL:
 
 ```text
-https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+https://github.com/chen09/agent-search-gateway
+```
+
+For manual copy, use the raw file URL:
+
+```text
+https://raw.githubusercontent.com/chen09/agent-search-gateway/main/rules/agent-search-gateway-user-rule.mdc
 ```
 
 The MCP config makes the tools available. The User Rule improves the chance that Cursor chooses `agent_search` and `agent_extract` for web search, current information, external documentation lookup, and URL extraction across the user's projects.

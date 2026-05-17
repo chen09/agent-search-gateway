@@ -4,6 +4,7 @@
 
 - Added project notes for first-build decisions, verification evidence, and article material.
 - Added a reusable Cursor User Rule template for other projects.
+- Moved the reusable Cursor User Rule template to top-level `rules/` so Cursor User Rules GitHub/GitLab import can clone the repository instead of a single file URL.
 
 ## 0.2.2 - 2026-05-17
 

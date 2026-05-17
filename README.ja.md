@@ -244,7 +244,13 @@ cp -R skills/agent-search-gateway ~/.agents/skills/
 Cursor users 向けには reusable User Rule template を用意しています。
 
 ```text
-integrations/cursor/agent-search-gateway-user-rule.mdc
+rules/agent-search-gateway-user-rule.mdc
+```
+
+Cursor User Rules の GitHub/GitLab import には repository URL を入力します。`blob` や raw file URL は入力しません。
+
+```text
+https://github.com/chen09/agent-search-gateway
 ```
 
 Cursor、Codex、Claude、OpenClaw、Hermes のセットアップ手順は [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md) を参照してください。

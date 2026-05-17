@@ -244,7 +244,13 @@ cp -R skills/agent-search-gateway ~/.agents/skills/
 Cursor 用户可以使用这个可复用 User Rule 模板：
 
 ```text
-integrations/cursor/agent-search-gateway-user-rule.mdc
+rules/agent-search-gateway-user-rule.mdc
+```
+
+Cursor User Rules 的 GitHub/GitLab import 里要填仓库 URL，不要填 `blob` 或 raw file URL：
+
+```text
+https://github.com/chen09/agent-search-gateway
 ```
 
 Cursor、Codex、Claude、OpenClaw、Hermes 的配置步骤见 [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md)。

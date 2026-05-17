@@ -244,7 +244,13 @@ cp -R skills/agent-search-gateway ~/.agents/skills/
 For Cursor users, this repo includes a reusable User Rule template:
 
 ```text
-integrations/cursor/agent-search-gateway-user-rule.mdc
+rules/agent-search-gateway-user-rule.mdc
+```
+
+For Cursor User Rules GitHub/GitLab import, enter the repository URL, not a `blob` or raw file URL:
+
+```text
+https://github.com/chen09/agent-search-gateway
 ```
 
 See [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md) for Cursor, Codex, Claude, OpenClaw, and Hermes setup steps.
