@@ -5,6 +5,8 @@ const root = new URL(".", import.meta.url).pathname;
 const sourcePath = path.join(root, "article-wechat-ready.md");
 const fullOutputPath = path.join(root, "article-wechat-ready.html");
 const bodyOutputPath = path.join(root, "article-wechat-body.html");
+const noImageFullOutputPath = path.join(root, "article-wechat-ready-no-images.html");
+const noImageBodyOutputPath = path.join(root, "article-wechat-body-no-images.html");
 
 const md = fs.readFileSync(sourcePath, "utf8");
 const title =
@@ -58,6 +60,16 @@ function imageHtml(alt, src) {
   ].join("\n");
 }
 
+function imagePlaceholderHtml(alt) {
+  const cleanAlt = escapeHtml(alt);
+  return [
+    '<section style="margin: 30px 0 18px; padding: 22px 18px; border: 1px dashed #93c5fd; border-radius: 8px; background: #eff6ff; color: #1e3a8a; text-align: center; line-height: 1.8; font-size: 15px;">',
+    `<strong style="display: block; margin: 0 0 6px; color: #1d4ed8; font-weight: 800;">图片待补</strong>`,
+    `<span>${cleanAlt}</span>`,
+    "</section>",
+  ].join("\n");
+}
+
 function codeBlockHtml(code, language) {
   const label = language ? `<span style="display: block; margin: 0 0 8px; color: #94a3b8; font-size: 13px;">${escapeHtml(language)}</span>` : "";
   return [
@@ -81,7 +93,7 @@ function closeList(listOpen, html) {
   }
 }
 
-function renderMarkdown(markdown, { includeTitle }) {
+function renderMarkdown(markdown, { includeTitle, imageMode = "image" }) {
   const html = [];
   const paragraph = [];
   const listOpen = { value: false };
@@ -134,7 +146,11 @@ function renderMarkdown(markdown, { includeTitle }) {
     if (image) {
       flushParagraph(paragraph, html);
       closeList(listOpen, html);
-      html.push(imageHtml(image[1], image[2]));
+      html.push(
+        imageMode === "placeholder"
+          ? imagePlaceholderHtml(image[1])
+          : imageHtml(image[1], image[2]),
+      );
       continue;
     }
 
@@ -226,8 +242,24 @@ const bodyHtml = page(
   "推荐粘贴版：不包含 H1 标题。公众号标题请单独填写，正文从头图开始复制。",
 );
 
+const noImageFullHtml = page(
+  renderMarkdown(md, { includeTitle: true, imageMode: "placeholder" }),
+  `${title}（无图片占位版）`,
+  "预览版：图片以占位块显示。生成图片后再替换到公众号正文中。",
+);
+
+const noImageBodyHtml = page(
+  renderMarkdown(md, { includeTitle: false, imageMode: "placeholder" }),
+  "公众号正文粘贴版（无图片占位）",
+  "推荐粘贴版：不包含 H1 标题，图片以占位块显示。公众号标题请单独填写。",
+);
+
 fs.writeFileSync(fullOutputPath, fullHtml);
 fs.writeFileSync(bodyOutputPath, bodyHtml);
+fs.writeFileSync(noImageFullOutputPath, noImageFullHtml);
+fs.writeFileSync(noImageBodyOutputPath, noImageBodyHtml);
 
 console.log(`wrote ${fullOutputPath}`);
 console.log(`wrote ${bodyOutputPath}`);
+console.log(`wrote ${noImageFullOutputPath}`);
+console.log(`wrote ${noImageBodyOutputPath}`);
