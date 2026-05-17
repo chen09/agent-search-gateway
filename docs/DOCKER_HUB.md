@@ -17,6 +17,11 @@ DOCKERHUB_USERNAME=<dockerhub-username>
 DOCKERHUB_TOKEN=<docker-hub-access-token>
 ```
 
+Required Docker Hub token permissions:
+
+- Image publishing only: public repository read/write is enough.
+- Image publishing plus Docker Hub Overview sync: public repository read/write/delete is required by the Docker Hub description update action.
+
 The workflow is:
 
 ```text
