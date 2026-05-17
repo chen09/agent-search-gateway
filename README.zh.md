@@ -88,6 +88,7 @@ RERANKER_ENABLED=false
 ```
 
 完整 `.env` 说明见 [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)，里面有 Docker Compose、本机 Python 开发、MCP 客户端、hosted provider keys、Jina Reader、可选 reranker 的示例。
+第一阶段的决策、验证记录和文章素材见 [docs/PROJECT_NOTES.md](docs/PROJECT_NOTES.md)。
 
 服务器侧 provider key 放在网关 `.env`，不要放进 agent 的 MCP config：
 
@@ -239,6 +240,11 @@ MCP server 暴露：
 mkdir -p ~/.agents/skills
 cp -R skills/agent-search-gateway ~/.agents/skills/
 ```
+
+Cursor 用户有两个 rule 入口：
+
+- `.cursor/rules/agent-search-gateway.mdc`：本仓库自己的 project rule。
+- `integrations/cursor/agent-search-gateway-user-rule.mdc`：给其他项目 import/copy 到 Cursor User Rules 的可复用 rule。
 
 Cursor、Codex、Claude、OpenClaw、Hermes 的配置步骤见 [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md)。
 

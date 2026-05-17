@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added project notes for first-build decisions, verification evidence, and article material.
+- Added Cursor rules for this repository and a reusable Cursor User Rule template for other projects.
+
 ## 0.2.2 - 2026-05-17
 
 - Added Apache License 2.0 project licensing and third-party notices.

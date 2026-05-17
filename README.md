@@ -88,6 +88,7 @@ RERANKER_ENABLED=false
 ```
 
 See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) for complete `.env` examples for Docker Compose, host Python development, MCP clients, hosted provider keys, Jina Reader, and optional reranking.
+See [docs/PROJECT_NOTES.md](docs/PROJECT_NOTES.md) for the first-build decisions, verification notes, and article material.
 
 Server-side provider keys belong in the gateway `.env`, not in agent MCP configs:
 
@@ -239,6 +240,11 @@ The repo also includes an optional agent skill:
 mkdir -p ~/.agents/skills
 cp -R skills/agent-search-gateway ~/.agents/skills/
 ```
+
+For Cursor users, this repo includes two rule surfaces:
+
+- `.cursor/rules/agent-search-gateway.mdc`: project rule for this repository.
+- `integrations/cursor/agent-search-gateway-user-rule.mdc`: reusable rule to import or copy into Cursor User Rules for other projects.
 
 See [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md) for Cursor, Codex, Claude, OpenClaw, and Hermes setup steps.
 

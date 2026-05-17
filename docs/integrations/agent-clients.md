@@ -201,6 +201,26 @@ Use the generic MCP JSON above in Cursor's MCP configuration. Project-local conf
 
 After adding the server, restart or reload Cursor and ask the agent to list available MCP tools. It should see `agent_search` and `agent_extract`.
 
+This repo includes a Cursor project rule for the repository itself:
+
+```text
+.cursor/rules/agent-search-gateway.mdc
+```
+
+For other repositories, use the reusable Cursor User Rule template instead:
+
+```text
+integrations/cursor/agent-search-gateway-user-rule.mdc
+```
+
+GitHub/raw import URL:
+
+```text
+https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+```
+
+The MCP config makes the tools available. The User Rule improves the chance that Cursor chooses `agent_search` and `agent_extract` for web search, current information, external documentation lookup, and URL extraction across the user's projects.
+
 ## 6. Codex
 
 In Codex app MCP settings, add a stdio server:

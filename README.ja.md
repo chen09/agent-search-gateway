@@ -88,6 +88,7 @@ RERANKER_ENABLED=false
 ```
 
 Docker Compose、host Python development、MCP clients、hosted provider keys、Jina Reader、任意 reranking の完全な `.env` 例は [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) を参照してください。
+初期 build の decisions、verification notes、article material は [docs/PROJECT_NOTES.md](docs/PROJECT_NOTES.md) にあります。
 
 Server-side provider keys は gateway の `.env` に置き、agent の MCP config には置きません。
 
@@ -239,6 +240,11 @@ MCP server が公開する tools：
 mkdir -p ~/.agents/skills
 cp -R skills/agent-search-gateway ~/.agents/skills/
 ```
+
+Cursor users 向けには 2 つの rule surface があります。
+
+- `.cursor/rules/agent-search-gateway.mdc`：この repo 用の project rule。
+- `integrations/cursor/agent-search-gateway-user-rule.mdc`：他 project の Cursor User Rules に import/copy する再利用用 rule。
 
 Cursor、Codex、Claude、OpenClaw、Hermes のセットアップ手順は [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md) を参照してください。
 

@@ -150,6 +150,12 @@ docker compose up -d retrieval-api
 
 After rotating, update every MCP client config that uses the old key.
 
+For Cursor, import or copy the reusable User Rule from GitHub so Cursor knows when to prefer the gateway:
+
+```text
+https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+```
+
 MCP tools:
 
 - `agent_gateway_health`
@@ -306,6 +312,12 @@ docker compose up -d retrieval-api
 
 轮换后，需要更新所有仍在使用旧 key 的 MCP client config。
 
+Cursor 用户可以从 GitHub import/copy 这个可复用 User Rule，让 Cursor 更稳定地选择 gateway：
+
+```text
+https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+```
+
 MCP tools：
 
 - `agent_gateway_health`
@@ -461,6 +473,12 @@ docker compose up -d retrieval-api
 ```
 
 Rotation 後、古い key を使っているすべての MCP client config を更新してください。
+
+Cursor users は、この reusable User Rule を GitHub から import/copy できます。Cursor が gateway を選びやすくなります。
+
+```text
+https://raw.githubusercontent.com/chen09/agent-search-gateway/main/integrations/cursor/agent-search-gateway-user-rule.mdc
+```
 
 MCP tools：
 

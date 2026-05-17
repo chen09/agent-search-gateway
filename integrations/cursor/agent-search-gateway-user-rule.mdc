@@ -1,0 +1,20 @@
+---
+description: Prefer Agent Search Gateway MCP for web search and URL extraction
+alwaysApply: true
+---
+
+When the task requires web search, current information, external documentation lookup, or extracting clean content from URLs, prefer the `agent-search-gateway` MCP tools.
+
+Use:
+- `agent_gateway_health` to verify the gateway is reachable.
+- `agent_search` for search queries.
+- `agent_extract` for extracting clean content from known URLs.
+
+Do not use the gateway for local codebase search. Use Cursor's normal file and codebase tools for repository files.
+
+Do not ask the user for Tavily, Brave, Jina, MiniMax, or DeepSeek provider keys. Those keys belong on the gateway server. The Cursor client only needs:
+- `AGENT_SEARCH_GATEWAY_URL`
+- `AGENT_SEARCH_GATEWAY_API_KEY`
+- optional `AGENT_SEARCH_GATEWAY_TIMEOUT`
+
+If the task asks for latest, current, or external information and the MCP tools are available, call `agent_search` instead of relying only on model memory.
