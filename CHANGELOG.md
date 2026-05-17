@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+## 0.2.2 - 2026-05-17
+
 - Added Apache License 2.0 project licensing and third-party notices.
+- Added Python package metadata and the `agent-search-gateway-mcp` console script for `uvx --from git+...` MCP installs.
+- Updated agent-client documentation to make `uvx` the recommended MCP install path while keeping local `.venv` setup for repository development.
 
 ## 0.2.1 - 2026-05-17
 

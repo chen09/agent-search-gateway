@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-search-gateway"
+version = "0.2.2"
+description = "Self-hosted search and extraction gateway for AI agents"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+  { name = "Chen Xin" }
+]
+dependencies = [
+  "httpx==0.28.1",
+  "mcp==1.12.4",
+  "python-dotenv==1.0.1"
+]
+
+[project.optional-dependencies]
+api = [
+  "fastapi==0.115.6",
+  "trafilatura==2.0.0",
+  "uvicorn[standard]==0.34.0"
+]
+reranker = [
+  "sentence-transformers==3.3.1"
+]
+
+[project.scripts]
+agent-search-gateway-mcp = "integrations.mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/chen09/agent-search-gateway"
+Repository = "https://github.com/chen09/agent-search-gateway"
+Docker = "https://hub.docker.com/r/chen920/agent-search-gateway"
+
+[tool.setuptools.packages.find]
+include = ["api*", "integrations*"]

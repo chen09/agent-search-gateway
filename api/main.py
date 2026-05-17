@@ -28,7 +28,7 @@ from api.rerank import rerank_candidates
 from api.summary import summarize
 from api.text_utils import canonical_url
 
-app = FastAPI(title="Agent Search Gateway", version="0.2.1")
+app = FastAPI(title="Agent Search Gateway", version="0.2.2")
 
 search_cache = TTLCache(
     ttl_seconds=settings.search_cache_ttl_seconds,

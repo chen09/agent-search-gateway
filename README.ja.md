@@ -155,37 +155,40 @@ docker.io/chen920/agent-search-gateway:latest
 
 Cursor、Codex、Claude、OpenClaw、Hermes などの agent には MCP server 経由で接続するのが推奨です。MCP server は host 上で動き、gateway `http://127.0.0.1:8010` を呼びます。SearXNG を直接呼びません。
 
-Host-side MCP dependencies：
-
-```bash
-cd agent-search-gateway
-pyenv install 3.12.10  # 必要な場合
-pyenv local 3.12.10
-python -m venv .venv
-. .venv/bin/activate
-pip install -r api/requirements.txt
-pip install -r integrations/mcp/requirements.txt
-.venv/bin/python scripts/smoke_mcp.py
-```
-
-Generic MCP config：
+推奨 MCP config は、`uvx` で GitHub release から直接実行する形です。
 
 ```json
 {
   "mcpServers": {
     "agent-search-gateway": {
-      "command": "/absolute/path/to/agent-search-gateway/.venv/bin/python",
+      "command": "uvx",
       "args": [
-        "/absolute/path/to/agent-search-gateway/integrations/mcp/server.py"
+        "--from",
+        "git+https://github.com/chen09/agent-search-gateway.git@v0.2.2",
+        "agent-search-gateway-mcp"
       ],
       "env": {
-        "AGENT_SEARCH_GATEWAY_URL": "http://127.0.0.1:8010",
-        "AGENT_SEARCH_GATEWAY_ENV_FILE": "/absolute/path/to/agent-search-gateway/.env"
+        "AGENT_SEARCH_GATEWAY_ENV_FILE": "/absolute/path/to/agent-search-gateway.env"
       }
     }
   }
 }
 ```
+
+自分だけが使う private config であれば、key を MCP の `env` block に直接書いても構いません。
+
+```json
+{
+  "env": {
+    "AGENT_SEARCH_GATEWAY_URL": "https://api.agentsearchgateway.com",
+    "AGENT_SEARCH_GATEWAY_API_KEY": "replace-with-your-gateway-api-key",
+    "AGENT_SEARCH_GATEWAY_TIMEOUT": "90"
+  }
+}
+```
+
+clone した repo の中で開発する場合は、[docs/integrations/agent-clients.md](docs/integrations/agent-clients.md) の local `.venv` 手順を使ってください。
+local Docker Compose gateway を使う場合、`AGENT_SEARCH_GATEWAY_ENV_FILE` は clone した repo の `.env` を直接指して構いません。
 
 MCP server が公開する tools：
 

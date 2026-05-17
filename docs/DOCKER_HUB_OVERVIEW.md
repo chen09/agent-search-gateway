@@ -24,7 +24,7 @@ Source and full documentation:
 ```text
 docker.io/chen920/agent-search-gateway:latest
 docker.io/chen920/agent-search-gateway:0.2
-docker.io/chen920/agent-search-gateway:0.2.1
+docker.io/chen920/agent-search-gateway:0.2.2
 ```
 
 Published platforms:
@@ -116,12 +116,13 @@ curl -sS -H "Authorization: Bearer ${API_KEY}" \
 Cursor, Codex, Claude, OpenClaw, Hermes, and other MCP-capable agents should use the MCP server from the GitHub repo:
 
 ```text
-Command: /absolute/path/to/agent-search-gateway/.venv/bin/python
-Args: /absolute/path/to/agent-search-gateway/integrations/mcp/server.py
+Command: uvx
+Args: --from git+https://github.com/chen09/agent-search-gateway.git@v0.2.2 agent-search-gateway-mcp
 Env:
-  AGENT_SEARCH_GATEWAY_URL=http://127.0.0.1:8010
-  AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway/.env
+  AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway.env
 ```
+
+The env file should contain `AGENT_SEARCH_GATEWAY_URL` and either `AGENT_SEARCH_GATEWAY_API_KEY` for a remote gateway or `RETRIEVAL_API_KEY` for a local gateway.
 
 MCP tools:
 
@@ -153,7 +154,7 @@ Third-party components keep their own upstream licenses. See the GitHub reposito
 ```text
 docker.io/chen920/agent-search-gateway:latest
 docker.io/chen920/agent-search-gateway:0.2
-docker.io/chen920/agent-search-gateway:0.2.1
+docker.io/chen920/agent-search-gateway:0.2.2
 ```
 
 已发布平台：
@@ -245,12 +246,13 @@ curl -sS -H "Authorization: Bearer ${API_KEY}" \
 Cursor、Codex、Claude、OpenClaw、Hermes 和其他支持 MCP 的 agent，推荐使用 GitHub 仓库里的 MCP server：
 
 ```text
-Command: /absolute/path/to/agent-search-gateway/.venv/bin/python
-Args: /absolute/path/to/agent-search-gateway/integrations/mcp/server.py
+Command: uvx
+Args: --from git+https://github.com/chen09/agent-search-gateway.git@v0.2.2 agent-search-gateway-mcp
 Env:
-  AGENT_SEARCH_GATEWAY_URL=http://127.0.0.1:8010
-  AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway/.env
+  AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway.env
 ```
+
+这个 env 文件里应包含 `AGENT_SEARCH_GATEWAY_URL`，以及远程网关使用的 `AGENT_SEARCH_GATEWAY_API_KEY`，或本地网关使用的 `RETRIEVAL_API_KEY`。
 
 MCP tools：
 
@@ -282,7 +284,7 @@ Agent Search Gateway 使用 Apache License 2.0。
 ```text
 docker.io/chen920/agent-search-gateway:latest
 docker.io/chen920/agent-search-gateway:0.2
-docker.io/chen920/agent-search-gateway:0.2.1
+docker.io/chen920/agent-search-gateway:0.2.2
 ```
 
 公開プラットフォーム：
@@ -374,12 +376,13 @@ curl -sS -H "Authorization: Bearer ${API_KEY}" \
 Cursor、Codex、Claude、OpenClaw、Hermes などの MCP-capable agents は、GitHub repo の MCP server を使うのが推奨です。
 
 ```text
-Command: /absolute/path/to/agent-search-gateway/.venv/bin/python
-Args: /absolute/path/to/agent-search-gateway/integrations/mcp/server.py
+Command: uvx
+Args: --from git+https://github.com/chen09/agent-search-gateway.git@v0.2.2 agent-search-gateway-mcp
 Env:
-  AGENT_SEARCH_GATEWAY_URL=http://127.0.0.1:8010
-  AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway/.env
+  AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway.env
 ```
+
+この env file には `AGENT_SEARCH_GATEWAY_URL` と、remote gateway 用の `AGENT_SEARCH_GATEWAY_API_KEY` または local gateway 用の `RETRIEVAL_API_KEY` を入れてください。
 
 MCP tools：
 

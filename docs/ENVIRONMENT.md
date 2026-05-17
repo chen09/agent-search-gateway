@@ -130,12 +130,24 @@ On Apple Silicon, use `RERANKER_DEVICE=mps` only after confirming your local PyT
 
 ## MCP Client Environment
 
-MCP clients should not paste `RETRIEVAL_API_KEY` directly into config unless they cannot read an env file. Prefer pointing the MCP server at the repo `.env`:
+MCP clients run the MCP server as a local process. Prefer a private env file or pointing the MCP server at the repo `.env`.
+
+For a local Docker Compose gateway:
 
 ```text
 AGENT_SEARCH_GATEWAY_URL=http://127.0.0.1:8010
 AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway/.env
 ```
+
+For a remote gateway:
+
+```text
+AGENT_SEARCH_GATEWAY_URL=https://api.agentsearchgateway.com
+AGENT_SEARCH_GATEWAY_API_KEY=<your-gateway-api-key>
+AGENT_SEARCH_GATEWAY_TIMEOUT=90
+```
+
+If your MCP client config is private and never committed or synced, the same values can be written directly into the client's MCP `env` block.
 
 These are MCP process environment variables, not values that normally need to be written into the gateway `.env`.
 

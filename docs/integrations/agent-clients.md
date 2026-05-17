@@ -1,6 +1,11 @@
 # Agent Client Integration
 
-This guide is for someone who clones this repository and wants Cursor, Codex, Claude, OpenClaw, Hermes, or another agent to use the gateway as a local search and extraction tool.
+This guide is for someone who wants Cursor, Codex, Claude, OpenClaw, Hermes, or another agent to use Agent Search Gateway.
+
+There are two supported MCP styles:
+
+- `uvx` from GitHub: best for end users and remote gateways because it does not require cloning or creating a venv.
+- Local `.venv`: best for developers working inside a cloned repo.
 
 ## 1. Start The Gateway
 
@@ -24,9 +29,85 @@ curl http://127.0.0.1:8010/healthz
 curl 'http://127.0.0.1:8888/search?q=searxng&format=json' | head
 ```
 
-## 2. Install MCP Dependencies
+## 2. MCP Environment
 
-The MCP server runs on the host and calls the Dockerized gateway over HTTP.
+The MCP server runs on the agent machine and calls the gateway over HTTP.
+
+For a public or remote gateway, create a local env file on the agent machine:
+
+```bash
+mkdir -p ~/.agents/env
+chmod 700 ~/.agents/env
+cat > ~/.agents/env/agent-search-gateway.env <<'EOF'
+AGENT_SEARCH_GATEWAY_URL=https://api.agentsearchgateway.com
+AGENT_SEARCH_GATEWAY_API_KEY=replace-with-your-gateway-api-key
+AGENT_SEARCH_GATEWAY_TIMEOUT=90
+EOF
+chmod 600 ~/.agents/env/agent-search-gateway.env
+```
+
+For a local Docker Compose gateway, point the MCP config directly at the repo `.env`:
+
+```json
+{
+  "env": {
+    "AGENT_SEARCH_GATEWAY_URL": "http://127.0.0.1:8010",
+    "AGENT_SEARCH_GATEWAY_ENV_FILE": "/absolute/path/to/agent-search-gateway/.env"
+  }
+}
+```
+
+Do not paste `RETRIEVAL_API_KEY` into prompts. Prefer a local env file readable only by your user.
+
+If your MCP config is private and never committed or synced, it is also valid to put the key directly in the MCP `env` block:
+
+```json
+{
+  "env": {
+    "AGENT_SEARCH_GATEWAY_URL": "https://api.agentsearchgateway.com",
+    "AGENT_SEARCH_GATEWAY_API_KEY": "replace-with-your-gateway-api-key",
+    "AGENT_SEARCH_GATEWAY_TIMEOUT": "90"
+  }
+}
+```
+
+## 3. Recommended MCP: uvx From GitHub
+
+Use this shape for clients that accept an `mcpServers` JSON object, including many Cursor and Claude-compatible configurations:
+
+```json
+{
+  "mcpServers": {
+    "agent-search-gateway": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/chen09/agent-search-gateway.git@v0.2.2",
+        "agent-search-gateway-mcp"
+      ],
+      "env": {
+        "AGENT_SEARCH_GATEWAY_ENV_FILE": "/absolute/path/to/agent-search-gateway.env"
+      }
+    }
+  }
+}
+```
+
+For a tagged release, pin the Git source:
+
+```text
+git+https://github.com/chen09/agent-search-gateway.git@v0.2.2
+```
+
+The MCP server exposes:
+
+- `agent_gateway_health`
+- `agent_search`
+- `agent_extract`
+
+## 4. Developer MCP: Local venv
+
+Use this when editing the repository or when the target agent is running on the same machine as the cloned repo.
 
 ```bash
 pyenv install 3.12.10  # if needed
@@ -62,18 +143,14 @@ Arguments:
 /absolute/path/to/agent-search-gateway/integrations/mcp/server.py
 ```
 
-Environment:
+Environment for a local gateway:
 
 ```text
 AGENT_SEARCH_GATEWAY_URL=http://127.0.0.1:8010
 AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway/.env
 ```
 
-Do not paste `RETRIEVAL_API_KEY` into MCP config unless your client cannot read env files. Prefer `AGENT_SEARCH_GATEWAY_ENV_FILE`.
-
-## 3. Generic MCP JSON
-
-Use this shape for clients that accept an `mcpServers` JSON object, including many Cursor and Claude-compatible configurations:
+Local venv MCP JSON:
 
 ```json
 {
@@ -92,52 +169,49 @@ Use this shape for clients that accept an `mcpServers` JSON object, including ma
 }
 ```
 
-The MCP server exposes:
-
-- `agent_gateway_health`
-- `agent_search`
-- `agent_extract`
-
-## 4. Cursor
+## 5. Cursor
 
 Use the generic MCP JSON above in Cursor's MCP configuration. Project-local configs commonly live under `.cursor/mcp.json`; global configs depend on your Cursor version and workspace policy.
 
 After adding the server, restart or reload Cursor and ask the agent to list available MCP tools. It should see `agent_search` and `agent_extract`.
 
-## 5. Codex
+## 6. Codex
 
 In Codex app MCP settings, add a stdio server:
 
 - Name: `agent-search-gateway`
-- Command: `/absolute/path/to/agent-search-gateway/.venv/bin/python`
-- Args: `/absolute/path/to/agent-search-gateway/integrations/mcp/server.py`
+- Command: `uvx`
+- Args:
+  - `--from`
+  - `git+https://github.com/chen09/agent-search-gateway.git@v0.2.2`
+  - `agent-search-gateway-mcp`
 - Env:
-  - `AGENT_SEARCH_GATEWAY_URL=http://127.0.0.1:8010`
-  - `AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway/.env`
+  - `AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway.env`
 
 Reload the Codex session after saving the MCP server.
 
-## 6. Claude
+## 7. Claude
 
 For Claude clients that accept `mcpServers`, use the generic MCP JSON. For UI-based clients, map the same command, args, and env values into the MCP server form.
 
 Keep the gateway API key server-side in `.env`; do not paste it into prompts.
 
-## 7. OpenClaw
+## 8. OpenClaw
 
 ```bash
-openclaw mcp set agent-search-gateway '{"command":"/absolute/path/to/agent-search-gateway/.venv/bin/python","args":["/absolute/path/to/agent-search-gateway/integrations/mcp/server.py"],"env":{"AGENT_SEARCH_GATEWAY_URL":"http://127.0.0.1:8010","AGENT_SEARCH_GATEWAY_ENV_FILE":"/absolute/path/to/agent-search-gateway/.env"}}'
+openclaw mcp set agent-search-gateway '{"command":"uvx","args":["--from","git+https://github.com/chen09/agent-search-gateway.git@v0.2.2","agent-search-gateway-mcp"],"env":{"AGENT_SEARCH_GATEWAY_ENV_FILE":"/absolute/path/to/agent-search-gateway.env"}}'
 openclaw mcp show agent-search-gateway --json
 ```
 
-## 8. Hermes
+## 9. Hermes
 
 ```bash
 hermes mcp add agent-search-gateway \
-  --command /absolute/path/to/agent-search-gateway/.venv/bin/python \
-  --args /absolute/path/to/agent-search-gateway/integrations/mcp/server.py \
-  --env AGENT_SEARCH_GATEWAY_URL=http://127.0.0.1:8010 \
-  --env AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway/.env
+  --command uvx \
+  --args --from \
+  --args git+https://github.com/chen09/agent-search-gateway.git@v0.2.2 \
+  --args agent-search-gateway-mcp \
+  --env AGENT_SEARCH_GATEWAY_ENV_FILE=/absolute/path/to/agent-search-gateway.env
 
 hermes mcp list
 ```
@@ -150,7 +224,7 @@ hermes tools list --summary
 
 Then enable the relevant MCP tools through `hermes tools`.
 
-## 9. Install The Skill
+## 10. Install The Skill
 
 The skill is a lightweight operating guide for agents. It is not required when MCP is configured, but it helps agents decide when to use the gateway.
 
@@ -170,7 +244,7 @@ cp -R skills/agent-search-gateway ~/.openclaw/workspace/skills/
 
 For other agents, copy or symlink `skills/agent-search-gateway` into that agent's skill directory.
 
-## 10. Smoke Prompt
+## 11. Smoke Prompt
 
 After installing MCP and/or the skill, ask the target agent:
 

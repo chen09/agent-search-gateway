@@ -155,37 +155,40 @@ If users only copy `.env.example` without generating `SEARXNG_SECRET` and `RETRI
 
 For Cursor, Codex, Claude, OpenClaw, Hermes, and similar agents, use the MCP server as the primary integration point. The MCP server runs on the host and calls the gateway at `http://127.0.0.1:8010`; it does not call SearXNG directly.
 
-Install host-side MCP dependencies:
-
-```bash
-cd agent-search-gateway
-pyenv install 3.12.10  # if needed
-pyenv local 3.12.10
-python -m venv .venv
-. .venv/bin/activate
-pip install -r api/requirements.txt
-pip install -r integrations/mcp/requirements.txt
-.venv/bin/python scripts/smoke_mcp.py
-```
-
-Generic MCP config shape:
+Recommended MCP config, using `uvx` from the GitHub release:
 
 ```json
 {
   "mcpServers": {
     "agent-search-gateway": {
-      "command": "/absolute/path/to/agent-search-gateway/.venv/bin/python",
+      "command": "uvx",
       "args": [
-        "/absolute/path/to/agent-search-gateway/integrations/mcp/server.py"
+        "--from",
+        "git+https://github.com/chen09/agent-search-gateway.git@v0.2.2",
+        "agent-search-gateway-mcp"
       ],
       "env": {
-        "AGENT_SEARCH_GATEWAY_URL": "http://127.0.0.1:8010",
-        "AGENT_SEARCH_GATEWAY_ENV_FILE": "/absolute/path/to/agent-search-gateway/.env"
+        "AGENT_SEARCH_GATEWAY_ENV_FILE": "/absolute/path/to/agent-search-gateway.env"
       }
     }
   }
 }
 ```
+
+For a private local config, the key can also be written directly into the MCP `env` block:
+
+```json
+{
+  "env": {
+    "AGENT_SEARCH_GATEWAY_URL": "https://api.agentsearchgateway.com",
+    "AGENT_SEARCH_GATEWAY_API_KEY": "replace-with-your-gateway-api-key",
+    "AGENT_SEARCH_GATEWAY_TIMEOUT": "90"
+  }
+}
+```
+
+For repository development, use the local `.venv` path described in [docs/integrations/agent-clients.md](docs/integrations/agent-clients.md).
+For a local Docker Compose gateway, `AGENT_SEARCH_GATEWAY_ENV_FILE` may point directly to the cloned repo's `.env`.
 
 The MCP server exposes:
 

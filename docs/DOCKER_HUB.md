@@ -40,14 +40,14 @@ It publishes multi-architecture images for:
 Push a release tag:
 
 ```bash
-git tag -a v0.2.1 -m "v0.2.1"
-git push origin v0.2.1
+git tag -a v0.2.2 -m "v0.2.2"
+git push origin v0.2.2
 ```
 
-Expected Docker tags for `v0.2.1`:
+Expected Docker tags for `v0.2.2`:
 
 ```text
-chen920/agent-search-gateway:0.2.1
+chen920/agent-search-gateway:0.2.2
 chen920/agent-search-gateway:0.2
 chen920/agent-search-gateway:latest
 ```
@@ -122,7 +122,7 @@ docker.io/chen920/agent-search-gateway:latest
 If you maintain a fork under another Docker Hub namespace, set the image explicitly:
 
 ```bash
-RETRIEVAL_API_IMAGE=docker.io/<dockerhub-username>/agent-search-gateway:0.2.1 \
+RETRIEVAL_API_IMAGE=docker.io/<dockerhub-username>/agent-search-gateway:0.2.2 \
   docker compose -f docker-compose.image.yml up -d
 ```
 
