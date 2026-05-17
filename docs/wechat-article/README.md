@@ -2,6 +2,18 @@
 
 This folder contains publishing material for a Chinese WeChat article about Agent Search Gateway.
 
+## Status
+
+- User-reported published date: 2026-05-18.
+- Final article title: `给自己的 AI Agent 搭了一个自托管检索网关`.
+- Final abstract used for publishing:
+
+  ```text
+  AI Agent 需要的不只是搜索框，而是可控的检索工具层。我从 Tavily 额度问题出发，搭了一个自托管 Gateway，并打通 Docker、HTTPS、MCP 和 Cursor 自动调用。
+  ```
+
+The generated images were produced outside this repository and inserted manually into WeChat. The reusable prompts are preserved in `image-production-pack.md`, including the WeChat cover prompt.
+
 ## Files
 
 - `article-title.txt`: proposed article title.

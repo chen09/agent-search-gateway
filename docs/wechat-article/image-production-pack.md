@@ -517,3 +517,79 @@ Readable, practical, no hype.
 Use green for completed baseline, amber for next work, blue for stable target.
 No tiny text.
 ```
+
+## WeChat Cover Image
+
+Filename suggestion:
+
+```text
+wechat-cover-agent-search-gateway.png
+```
+
+Recommended size:
+
+```text
+900x383px, 2.35:1
+```
+
+Prompt:
+
+```text
+Create a WeChat article cover image for a Chinese technical article.
+
+Aspect ratio:
+2.35:1 wide cover, optimized for 900px x 383px.
+
+Theme:
+A modern, futuristic AI infrastructure cover for an article about building a self-hosted Agent Search Gateway for AI agents.
+
+Main title in Chinese:
+“给 AI Agent 搭一个自托管检索网关”
+
+Optional small subtitle:
+“SearXNG · Docker · MCP · HTTPS”
+
+Visual concept:
+A clean futuristic command center / network gateway scene.
+Several glowing AI agent nodes on the left flow into a central luminous gateway core.
+From the gateway, clean data streams route to multiple search/provider nodes on the right.
+The scene should imply:
+AI Agents
+MCP
+Search Gateway
+Self-hosted infrastructure
+Secure HTTPS API
+Provider routing
+
+Composition:
+Wide cinematic layout.
+Central focus: a bright blue-green gateway core with a subtle search icon or shield-search symbol.
+Left side: abstract agent nodes, not detailed logos.
+Right side: abstract provider/search nodes, not detailed logos.
+Bottom or background: subtle server racks, Docker/container blocks, network lines, and cloud/server hints.
+Keep the title large and readable on mobile.
+
+Style:
+Modern AI infrastructure.
+Premium SaaS / cyber engineering aesthetic.
+Clean, bright, not dark.
+Warm white to light blue background with blue, green, and amber accents.
+Futuristic but credible.
+No dense diagram.
+No small text.
+No fake screenshots.
+No brand logos.
+No complicated arrows.
+No clutter.
+
+Text requirements:
+Only include the main title and optional subtitle.
+Make all Chinese text clean, correct, and large.
+Leave enough safe margin around all text so it will not be cropped in WeChat.
+
+Mood:
+Practical, technical, self-hosted, secure, future-facing.
+Not marketing hype.
+Not fantasy.
+Not cyberpunk dark.
+```

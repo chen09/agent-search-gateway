@@ -292,6 +292,32 @@ Useful phrasing:
 - "MCP is the agent-facing adapter; Docker Compose is the operator-facing runtime."
 - "A search tool for agents is still useful for humans because the API returns normalized sources, extracted content, scores, and errors."
 
+## WeChat Article Publication
+
+User-reported status:
+
+- The WeChat subscription article was published on 2026-05-18.
+- Final title: `给自己的 AI Agent 搭了一个自托管检索网关`.
+- Final abstract:
+
+  ```text
+  AI Agent 需要的不只是搜索框，而是可控的检索工具层。我从 Tavily 额度问题出发，搭了一个自托管 Gateway，并打通 Docker、HTTPS、MCP 和 Cursor 自动调用。
+  ```
+
+Publishing artifacts:
+
+- Source article: `docs/wechat-article/article-wechat-ready.md`.
+- Copy-only HTML: `docs/wechat-article/article-wechat-copy.html`.
+- No-image copy-only HTML: `docs/wechat-article/article-wechat-copy-no-images.html`.
+- Image prompt pack: `docs/wechat-article/image-production-pack.md`.
+- Renderer: `docs/wechat-article/render-wechat-html.mjs`.
+
+Important lesson for future article work:
+
+- Use the copy-only HTML files for WeChat paste.
+- Do not rely on browser automation for WeChat article editing unless the user explicitly asks; previous automated paste attempts risked title/body formatting problems.
+- Keep article text human and technical rather than turning engineering decisions into a miscellaneous "AI did wrong" checklist.
+
 ## What Went Well
 
 The progress stayed fast because decisions were kept explicit:
